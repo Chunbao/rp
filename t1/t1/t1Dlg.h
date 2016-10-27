@@ -5,6 +5,7 @@
 #pragma once
 
 #include "CWebBrowser2.h"
+#include "afxwin.h"
 
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
@@ -41,9 +42,13 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DHTML_EVENT_MAP()
 	
-//private:
+private:
+	CWebBrowser2 m_pBrowserMy;
 //    CWebBrowser2* m_pBrowser;	
 public:
-    CWebBrowser2 m_pBrowserMy;
+
     afx_msg void OnBnClickedButtonRefresh();
+	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
+private:
+	CEdit editor;
 };

@@ -6,6 +6,9 @@
 #include "t1.h"
 #include "t1Dlg.h"
 
+#include <Windows.h>
+#include <iostream>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -60,8 +63,9 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDHtmlDialog::DoDataExchange(pDX);
-    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+	CDHtmlDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+	DDX_Control(pDX, IDC_EDIT2, editor);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -120,7 +124,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_pBrowserMy.Navigate(strURL, &noArg, &noArg, &noArg, &noArg);
 */
     //@todo, read local file to check if it is registered
-
+	editor.SetWindowTextA("Hello world...");
     
     CString strURL("http://www.baidu.com");
     if(false/*if registered*/)
@@ -203,4 +207,43 @@ void Ct1Dlg::OnBnClickedButtonRefresh()
 {
     // TODO: Add your control notification handler code here
     m_pBrowserMy.Refresh();
+}
+
+BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
+{
+	SYSTEMTIME sys_time;
+	GetLocalTime(&sys_time);
+	char systemTime[150];
+	sprintf(systemTime, "%4d/%02d/%02d %02d:%02d:%02d.%03d ÐÇÆÚ%1d\n", sys_time.wYear,
+		sys_time.wMonth,
+		sys_time.wDay,
+		sys_time.wHour,
+		sys_time.wMinute,
+		sys_time.wSecond,
+		sys_time.wMilliseconds,
+		sys_time.wDayOfWeek);
+	editor.SetWindowTextA(systemTime);
+	//system("time");
+	//////////
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam == VK_RETURN)
+		{
+			pMsg->wParam = VK_TAB;
+			m_pBrowserMy.Refresh();
+		}
+		else if (pMsg->wParam == VK_F5)
+		{
+			m_pBrowserMy.Refresh();
+		}
+		/*else if (pMsg->wParam == VK_F4)
+		{
+			m_pBrowserMy.GoBack();
+		}
+		else if (pMsg->wParam == VK_F6)
+		{
+			m_pBrowserMy.GoForward();
+		}*/
+	}
+	return CDialog::PreTranslateMessage(pMsg);
 }
