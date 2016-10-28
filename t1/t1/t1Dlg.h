@@ -18,6 +18,9 @@
 //compiled lib
 // https://sourceforge.net/projects/tesseract-ocr-alt/files/
 
+//developer guide
+//t1/3rd/tesseract-3.02.02/vs2008/doc/programming.html
+
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
