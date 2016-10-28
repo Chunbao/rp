@@ -10,6 +10,14 @@
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 //https://msdn.microsoft.com/en-us/library/aa752046(v=vs.85).aspx
+
+// tesseract
+// http://stackoverflow.com/questions/18180824/how-to-implement-tesseract-to-run-with-project-in-visual-studio-2010
+// http://stackoverflow.com/questions/22924209/how-to-make-tesseract-ocr-read-from-coordinates-on-a-screen
+
+//compiled lib
+// https://sourceforge.net/projects/tesseract-ocr-alt/files/
+
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
@@ -50,5 +58,6 @@ public:
     afx_msg void OnBnClickedButtonRefresh();
 	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
 private:
-	CEdit editor;
+    // // display information pannel
+    CEdit editorMy;
 };

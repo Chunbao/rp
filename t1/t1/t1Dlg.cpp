@@ -63,9 +63,9 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDHtmlDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
-	DDX_Control(pDX, IDC_EDIT2, editor);
+    CDHtmlDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+    DDX_Control(pDX, IDC_EDIT1, editorMy);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -124,7 +124,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_pBrowserMy.Navigate(strURL, &noArg, &noArg, &noArg, &noArg);
 */
     //@todo, read local file to check if it is registered
-	editor.SetWindowTextA("Hello world...");
+	editorMy.SetWindowTextA("Hello world...");
     
     CString strURL("http://www.baidu.com");
     if(false/*if registered*/)
@@ -222,7 +222,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 		sys_time.wSecond,
 		sys_time.wMilliseconds,
 		sys_time.wDayOfWeek);
-	editor.SetWindowTextA(systemTime);
+	editorMy.SetWindowTextA(systemTime);
 	//system("time");
 	//////////
 	if (pMsg->message == WM_KEYDOWN)
