@@ -13,6 +13,164 @@
 #define new DEBUG_NEW
 #endif
 
+//FOR OCR
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+#include <fstream>
+#include <memory>
+#include <cstring>
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+
+#if defined _WIN32 || defined _WIN64
+#include <windows.h>
+#endif
+
+const int RELATIVE_LEFT = 739;
+const int RELATIVE_TOP = 334;
+const int RELATIVE_RIGHT = 800;
+const int RELATIVE_BOTTOM = 357;
+
+
+class Image
+{
+private:
+	std::vector<std::uint8_t> Pixels;
+	std::uint32_t width, height;
+	std::uint16_t BitsPerPixel;
+
+	void Flip(void* In, void* Out, int width, int height, unsigned int Bpp);
+
+public:
+#if defined _WIN32 || defined _WIN64
+	explicit Image(HDC DC, int X, int Y, int Width, int Height);
+#endif
+
+	inline std::uint16_t GetBitsPerPixel() { return this->BitsPerPixel; }
+	inline std::uint16_t GetBytesPerPixel() { return this->BitsPerPixel / 8; }
+	inline std::uint16_t GetBytesPerScanLine() { return (this->BitsPerPixel / 8) * this->width; }
+	inline int GetWidth() const { return this->width; }
+	inline int GetHeight() const { return this->height; }
+	inline const std::uint8_t* GetPixels() { return this->Pixels.data(); }
+};
+
+void Image::Flip(void* In, void* Out, int width, int height, unsigned int Bpp)
+{
+	unsigned long Chunk = (Bpp > 24 ? width * 4 : width * 3 + width % 4);
+	unsigned char* Destination = static_cast<unsigned char*>(Out);
+	unsigned char* Source = static_cast<unsigned char*>(In) + Chunk * (height - 1);
+
+	while (Source != In)
+	{
+		std::memcpy(Destination, Source, Chunk);
+		Destination += Chunk;
+		Source -= Chunk;
+	}
+}
+
+#if defined _WIN32 || defined _WIN64
+Image::Image(HDC DC, int X, int Y, int Width, int Height) : Pixels(), width(Width), height(Height), BitsPerPixel(32)
+{
+	BITMAP Bmp = { 0 };
+	HBITMAP hBmp = reinterpret_cast<HBITMAP>(GetCurrentObject(DC, OBJ_BITMAP));
+
+	if (GetObject(hBmp, sizeof(BITMAP), &Bmp) == 0)
+		throw std::runtime_error("BITMAP DC NOT FOUND.");
+
+	RECT area = { X, Y, X + Width, Y + Height };
+	HWND Window = WindowFromDC(DC);
+	GetClientRect(Window, &area);
+
+	HDC MemDC = GetDC(nullptr);
+	HDC SDC = CreateCompatibleDC(MemDC);
+	HBITMAP hSBmp = CreateCompatibleBitmap(MemDC, width, height);
+	DeleteObject(SelectObject(SDC, hSBmp));
+
+	BitBlt(SDC, 0, 0, width, height, DC, X, Y, SRCCOPY);
+	unsigned int data_size = ((width * BitsPerPixel + 31) / 32) * 4 * height;
+	std::vector<std::uint8_t> Data(data_size);
+	this->Pixels.resize(data_size);
+
+	BITMAPINFO Info = { sizeof(BITMAPINFOHEADER), static_cast<long>(width), static_cast<long>(height), 1, BitsPerPixel, BI_RGB, data_size, 0, 0, 0, 0 };
+	GetDIBits(SDC, hSBmp, 0, height, &Data[0], &Info, DIB_RGB_COLORS);
+	this->Flip(&Data[0], &Pixels[0], width, height, BitsPerPixel);
+
+	DeleteDC(SDC);
+	DeleteObject(hSBmp);
+	ReleaseDC(nullptr, MemDC);
+}
+#endif
+
+
+
+void GetScreenShot(int relativeWidth, int relativeHeight, int absoluteLeft, int absoluteTop)
+{
+	int x1, y1, x2, y2, w, h;
+
+	// get screen dimensions
+	x1 = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	//w = x2 - x1;
+	//h = y2 - y1;
+	w = relativeWidth;
+	h = relativeHeight;
+
+	// copy screen to bitmap
+	HDC     hScreen = GetDC(NULL);
+	HDC     hDC = CreateCompatibleDC(hScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+	HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
+	BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, absoluteLeft, absoluteTop, SRCCOPY);
+
+	// save bitmap to clipboard
+	OpenClipboard(NULL);
+	EmptyClipboard();
+	SetClipboardData(CF_BITMAP, hBitmap);
+	CloseClipboard();
+
+	// clean up
+	SelectObject(hDC, old_obj);
+	DeleteDC(hDC);
+	ReleaseDC(NULL, hScreen);
+	DeleteObject(hBitmap);
+}
+
+
+void GetScreenShotDialog(HDC h1) // h1 will be changed
+{
+    int x1, y1, x2, y2, w, h;
+
+    // get screen dimensions
+    x1 = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    w = x2 - x1;
+    h = y2 - y1;
+
+    // copy screen to bitmap
+    //HDC     hScreen = GetDC(NULL);
+    HDC     hScreen = h1;
+    HDC     hDC = CreateCompatibleDC(hScreen);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+    HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
+    BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, x1, y1, SRCCOPY);
+
+    // save bitmap to clipboard
+    OpenClipboard(NULL);
+    EmptyClipboard();
+    SetClipboardData(CF_BITMAP, hBitmap);
+    CloseClipboard();
+
+    // clean up
+    SelectObject(hDC, old_obj);
+    DeleteDC(hDC);
+    ReleaseDC(NULL, hScreen);
+    DeleteObject(hBitmap);
+}
 
 // CAboutDlg dialog used for App About
 
@@ -63,9 +221,10 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDHtmlDialog::DoDataExchange(pDX);
-    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
-    DDX_Control(pDX, IDC_EDIT1, editorMy);
+	CDHtmlDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+	DDX_Control(pDX, IDC_EDIT1, editorMy);
+	DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -126,8 +285,9 @@ BOOL Ct1Dlg::OnInitDialog()
     //@todo, read local file to check if it is registered
 	editorMy.SetWindowTextA("Hello world...");
     
-    CString strURL("http://www.baidu.com");
-    if(false/*if registered*/)
+    //CString strURL("http://www.baidu.com");
+	CString strURL("http://moni.51hupai.org/");
+	if(false/*if registered*/)
     {
         CString strURL("http://test.alltobid.com/");
     }
@@ -222,7 +382,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 		sys_time.wSecond,
 		sys_time.wMilliseconds,
 		sys_time.wDayOfWeek);
-	editorMy.SetWindowTextA(systemTime);
+	//editorMy.SetWindowTextA(systemTime);
 	//system("time");
 	//////////
 	if (pMsg->message == WM_KEYDOWN)
@@ -236,14 +396,89 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 		{
 			m_pBrowserMy.Refresh();
 		}
-		/*else if (pMsg->wParam == VK_F4)
+		else if (pMsg->wParam == VK_F4)
 		{
-			m_pBrowserMy.GoBack();
+			RECT rect;
+			GetWindowRect(&rect);
+			char coordinates[60];
+			//sprintf(coordinates, "%d, %d, %d, %d",rect.left, rect.top, rect.right, rect.bottom);
+
+			LONG horizonCoordinate = rect.left;
+			LONG verticalCoordinate = rect.top;
+
+			LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
+			LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
+
+			sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
+				captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+			editorMy.SetWindowTextA(coordinates);
 		}
-		else if (pMsg->wParam == VK_F6)
-		{
-			m_pBrowserMy.GoForward();
-		}*/
 	}
+
+	if (BN_CLICKED == pMsg->wParam)
+	{
+		RECT rect;
+		GetWindowRect(&rect);
+        LONG horizonCoordinate = rect.left;
+		LONG verticalCoordinate = rect.top;
+		LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
+		LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
+
+		char coordinates[30];
+		sprintf(coordinates, "%d, %d", RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
+		infoPanelEditor.SetWindowTextA(coordinates);
+	}
+
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+
+
+
+std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
+{
+	RECT rect;
+	GetWindowRect(&rect);
+	
+#if defined _WIN32 || defined _WIN64
+	
+	//HWND SomeWindowHandle = GetDesktopWindow();
+	HWND SomeWindowHandle = GetDesktopWindow()->m_hWnd;
+	//HDC DC = GetDC(SomeWindowHandle);
+	HDC DC = GetDC()->m_hDC;
+    
+    
+    // @todo, current dialog's hDC (image area)
+    //GetScreenShotDialog(DC);
+    //return std::string("test");
+
+
+    // @todo, fix offset caused by dialog title and frame area (width=8,height=30)
+	Image Img = Image(DC, relativeLeft - 8, relativeTop - 30, relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
+	
+	//ReleaseDC(SomeWindowHandle, DC);
+	ReleaseDC(GetDC());
+#else
+	Image Img = Image(some_pixel_pointer, 200, 200); //pointer to pixels..
+#endif
+	
+
+	
+    // For testing purpose
+	//GetScreenShot(relativeRight - relativeLeft, relativeBottom - relativeTop, rect.left + relativeLeft, rect.top + relativeTop);
+
+	//std::unique_ptr<tesseract::TessBaseAPI> tesseract_ptr(new tesseract::TessBaseAPI());
+	tesseract::TessBaseAPI tesseract_ptr;
+
+	//tesseract_ptr->Init("/tesseract/tessdata", "eng");
+	tesseract_ptr.Init("", "eng", tesseract::OEM_TESSERACT_CUBE_COMBINED);
+	tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
+	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789");
+	tesseract_ptr.SetVariable("tessedit_char_blacklist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
+	tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
+
+    //std::unique_ptr<char[]> utf8_text_ptr(tesseract_ptr->GetUTF8Text());
+	char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
+	return std::string(utf8_text_ptr);
 }

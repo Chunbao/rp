@@ -45,6 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\leptonica;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\tesseract"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -68,6 +69,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"

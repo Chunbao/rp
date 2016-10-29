@@ -12,6 +12,7 @@
 #endif
 
 
+
 // Ct1App
 
 BEGIN_MESSAGE_MAP(Ct1App, CWinAppEx)
@@ -80,3 +81,10 @@ BOOL Ct1App::InitInstance()
 	//  application, rather than start the application's message pump.
 	return FALSE;
 }
+
+/*
+BOOL Ct1App::PreTranslateMessage(MSG* pMsg)
+{
+
+	return CWinApp::PreTranslateMessage(pMsg);
+}*/

@@ -7,6 +7,8 @@
 #include "CWebBrowser2.h"
 #include "afxwin.h"
 
+#include <string>
+
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 //https://msdn.microsoft.com/en-us/library/aa752046(v=vs.85).aspx
@@ -54,13 +56,19 @@ protected:
 	DECLARE_DHTML_EVENT_MAP()
 	
 private:
-	CWebBrowser2 m_pBrowserMy;
-//    CWebBrowser2* m_pBrowser;	
+    std::string captureText(int x1, int y1, int x2, int y2);
+
+
 public:
 
     afx_msg void OnBnClickedButtonRefresh();
 	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
+
+
 private:
-    // // display information pannel
+	CWebBrowser2 m_pBrowserMy;
+    // 1
     CEdit editorMy;
+	// display information pannel
+	CEdit infoPanelEditor;
 };
