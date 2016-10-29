@@ -27,10 +27,17 @@
 #include <windows.h>
 #endif
 
-const int RELATIVE_LEFT = 739;
-const int RELATIVE_TOP = 334;
-const int RELATIVE_RIGHT = 800;
+//price
+const int RELATIVE_LEFT = 750;
+const int RELATIVE_TOP = 335;
+const int RELATIVE_RIGHT = 809;
 const int RELATIVE_BOTTOM = 357;
+
+//time
+//const int RELATIVE_LEFT = 266;
+//const int RELATIVE_TOP = 482;
+//const int RELATIVE_RIGHT = 312;
+//const int RELATIVE_BOTTOM = 495;
 
 
 class Image
@@ -471,9 +478,9 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 	tesseract::TessBaseAPI tesseract_ptr;
 
 	//tesseract_ptr->Init("/tesseract/tessdata", "eng");
-	tesseract_ptr.Init("", "eng", tesseract::OEM_TESSERACT_CUBE_COMBINED);
+	tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
 	tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
-	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789");
+	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
 	tesseract_ptr.SetVariable("tessedit_char_blacklist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 	tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
 	tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
