@@ -7,6 +7,7 @@
 #include "CWebBrowser2.h"
 #include "afxwin.h"
 
+#include <opencv2\core\core.hpp>
 #include <string>
 
 
@@ -57,7 +58,7 @@ protected:
 	
 private:
     std::string captureText(int x1, int y1, int x2, int y2);
-
+    cv::Point captureTemplate(const std::string& templ);
 
 public:
 

@@ -27,11 +27,23 @@
 #include <windows.h>
 #endif
 
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/highgui/highgui.hpp>
+
+//using namespace std;
+//using namespace cv;
+
 //price
 const int RELATIVE_LEFT = 750;
 const int RELATIVE_TOP = 335;
 const int RELATIVE_RIGHT = 809;
 const int RELATIVE_BOTTOM = 357;
+
+//@todo, need to be replaced for compatiable problems
+//@todo, use getWindowRect instead of getClientRect in Image
+const int DIALOG_FRAME_LEFT_WIDTH = 8;
+const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
 //time
 //const int RELATIVE_LEFT = 266;
@@ -178,6 +190,67 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     ReleaseDC(NULL, hScreen);
     DeleteObject(hBitmap);
 }
+
+
+//@todo, the screen got is black
+cv::Mat hwnd2mat(HWND hwnd) {
+
+    HDC hwindowDC, hwindowCompatibleDC;
+
+    int height, width, srcheight, srcwidth;
+    HBITMAP hbwindow;
+    cv::Mat src;
+    BITMAPINFOHEADER  bi;
+
+    hwindowDC = GetDC(hwnd);
+    hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
+    SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
+
+    RECT windowsize;    // get the height and width of the screen
+    GetClientRect(hwnd, &windowsize);
+
+    srcheight = windowsize.bottom;
+    srcwidth = windowsize.right;
+
+    //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
+    //width = windowsize.right / 2;
+    height = windowsize.bottom/* - windowsize.top*/;  //change this to whatever size you want to resize to
+    width = windowsize.right/* - windowsize.left*/;
+
+    //src.create(height, width, CV_8UC4);
+    src.create(height, width, CV_32FC1);
+
+    // create a bitmap
+    hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
+    bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
+    bi.biWidth = width;
+    bi.biHeight = -height;  //this is the line that makes it draw upside down or not
+    bi.biPlanes = 1;
+    bi.biBitCount = 32;
+
+    bi.biCompression = BI_RGB;
+    bi.biSizeImage = 0;
+    bi.biXPelsPerMeter = 0;
+    bi.biYPelsPerMeter = 0;
+    bi.biClrUsed = 0;
+    bi.biClrImportant = 0;
+
+    // use the previously created device context with the bitmap
+    SelectObject(hwindowCompatibleDC, hbwindow);
+    
+    // copy from the window device context to the bitmap device context
+    //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+    StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+    GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
+
+                                                                                                       // avoid memory leak
+    DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
+
+    return src;
+}
+
+
+
 
 // CAboutDlg dialog used for App About
 
@@ -416,8 +489,20 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 			LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
 			LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
 
-			sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
-				captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+            /// Create windows
+            std::string image_window("XXXXXX");
+            cv::namedWindow(image_window, CV_WINDOW_AUTOSIZE);
+            //namedWindow(result_window, CV_WINDOW_AUTOSIZE);
+            /// Create Trackbar
+            int match_method(0);
+            char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
+            cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
+
+            //cv::Point capturedPosition = captureTemplate("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
+            cv::Point capturedPosition(0, 0);
+            //display result
+			sprintf(coordinates, "%d, %d, %d, %d, %s, %d, %d", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
+				captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(), capturedPosition.x, capturedPosition.y);
 			editorMy.SetWindowTextA(coordinates);
 		}
 	}
@@ -461,7 +546,8 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 
 
     // @todo, fix offset caused by dialog title and frame area (width=8,height=30)
-	Image Img = Image(DC, relativeLeft - 8, relativeTop - 30, relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
+	Image Img = Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT, 
+                      relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
 	
 	//ReleaseDC(SomeWindowHandle, DC);
 	ReleaseDC(GetDC());
@@ -488,4 +574,50 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
     //std::unique_ptr<char[]> utf8_text_ptr(tesseract_ptr->GetUTF8Text());
 	char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
 	return std::string(utf8_text_ptr);
+}
+
+cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
+{
+    cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
+    //@todo, make sure file is removed beforehand. Or in memory.
+    //                                             solve the Mat.type() dismatch
+    cv::imwrite("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", dialogShot);
+    cv::Mat img = cv::imread("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", 1);
+    cv::Mat templ = cv::imread(templateFile, 1);
+    cv::Mat result;
+    int match_method = 0;
+    int max_Trackbar = 5;
+
+    //char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
+    //createTrackbar(trackbar_label, image_window, &match_method, max_Trackbar, MatchingMethod);
+    /// Create the result matrix
+    int result_cols = img.cols - templ.cols + 1;
+    int result_rows = img.rows - templ.rows + 1;
+
+    result.create(result_rows, result_cols, CV_32FC1);
+
+    /// Do the Matching and Normalize
+    matchTemplate(img, templ, result, match_method);
+    normalize(result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
+
+    /// Localizing the best match with minMaxLoc
+    double minVal; double maxVal; cv::Point minLoc; cv::Point maxLoc;
+    cv::Point matchLoc;
+
+    minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
+
+    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
+    if (match_method == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED)
+    {
+        matchLoc = minLoc;
+    }
+    else
+    {
+        matchLoc = maxLoc;
+    }
+
+    /// Show me what you got
+    //rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
+    //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
+    return  cv::Point(matchLoc.x + templ.cols/2, matchLoc.y + templ.rows/2);
 }
