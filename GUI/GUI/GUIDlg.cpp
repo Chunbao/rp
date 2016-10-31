@@ -152,9 +152,90 @@ HCURSOR CGUIDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void mouseMove(int x, int y)
+{
+    double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+    double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+    double fx = x*(65535.0f / fScreenWidth);
+    double fy = y*(65535.0f / fScreenHeight);
+    INPUT  Input = { 0 };
+    Input.type = INPUT_MOUSE;
+    Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+    Input.mi.dx = fx;
+    Input.mi.dy = fy;
+    ::SendInput(1, &Input, sizeof(INPUT));
+}
+
+void leftButtonClick(int x, int y)
+{
+    double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+    double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+    double fx = x*(65535.0f / fScreenWidth);
+    double fy = y*(65535.0f / fScreenHeight);
+    INPUT  Input = { 0 };
+    Input.type = INPUT_MOUSE;
+    Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+    Input.mi.dx = fx;
+    Input.mi.dy = fy;
+    ::SendInput(1, &Input, sizeof(INPUT));
+}
+
+void keyboardSendBackspaceKey()
+{
+    INPUT input_down = { 0 };
+    input_down.type = INPUT_KEYBOARD;
+    input_down.ki.dwFlags = 0;
+    input_down.ki.wScan = 0;
+    input_down.ki.wVk = VK_BACK;
+    SendInput(1, &input_down, sizeof(input_down));//keydown     
+    INPUT input_up = { 0 };
+    input_up.type = INPUT_KEYBOARD;
+    input_up.ki.wScan = 0;
+    input_up.ki.wVk = VK_BACK;
+    input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+    SendInput(1, &input_up, sizeof(input_up));//keyup 
+}
+
+void keyboardSendDeleteKey()
+{
+    INPUT input_down = { 0 };
+    input_down.type = INPUT_KEYBOARD;
+    input_down.ki.dwFlags = 0;
+    input_down.ki.wScan = 0;
+    input_down.ki.wVk = VK_DELETE;
+    SendInput(1, &input_down, sizeof(input_down));//keydown     
+    INPUT input_up = { 0 };
+    input_up.type = INPUT_KEYBOARD;
+    input_up.ki.wScan = 0;
+    input_up.ki.wVk = VK_DELETE;
+    input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+    SendInput(1, &input_up, sizeof(input_up));//keyup 
+}
+
+
+#include <string>
+void keyboardSendUnicodeInput(std::string message)
+{
+    for (int i = 0; i < message.size(); i++)
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = KEYEVENTF_UNICODE;
+        input_down.ki.wScan = (short)message.at(i);
+        input_down.ki.wVk = 0;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = (short)message.at(i);
+        input_up.ki.wVk = 0;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP | KEYEVENTF_UNICODE);
+        SendInput(1, &input_up, sizeof(input_up));//keyup      
+    }
+}
+
 BOOL CGUIDlg::PreTranslateMessage(MSG* pMsg)
 {
-    
+#if 0
     if (pMsg->message == WM_KEYDOWN)
 	{
         if (pMsg->wParam == VK_F5)
@@ -167,29 +248,28 @@ BOOL CGUIDlg::PreTranslateMessage(MSG* pMsg)
         }
         if (pMsg->wParam == VK_RETURN)
         {
-            //move the curse to position
-            m_hWnd;
+            //move the curse to position //perform click
             RECT rect;
             GetWindowRect(&rect);
-            int x = rect.left + 357;
-            int y = rect.top + 325;
-            //SentMessage ( m_hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM(357, 325) );
-            //SentMessage ( m_hWnd, WM_LBUTTONUP, 0, MAKELPARAM(357, 325) );
-            
-            INPUT input;
-            input.type=INPUT_MOUSE;
-            input.mi.dx=x;
-            input.mi.dy=y;
-            input.mi.dwFlags=(MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_MOVE|MOUSEEVENTF_LEFTDOWN|MOUSEEVENTF_LEFTUP);
-            input.mi.mouseData=0;
-            input.mi.dwExtraInfo=NULL;
-            input.mi.time=0;
-            SendInput(1,&input,sizeof(INPUT));
-            
-            //perform click
+
+            //  @todo, !!!!!! provide inputs
+            //mouseMove(rect.left + 168, rect.top + 88);
+
+            // @todo, good to have, check number pad is on
+            leftButtonClick(rect.left + 168, rect.top + 88);
+ 
+            // error handling, might not needed
+            //for (size_t i = 0; i < 50; i++)
+            //{
+            //    keyboardSendBackspaceKey();
+            //    keyboardSendDeleteKey();
+            //}
+            keyboardSendUnicodeInput("85900");
+            leftButtonClick(rect.left + 359, rect.top + 330);
+            return true;
         }
 	}
-	
+#endif
     if (BN_CLICKED == pMsg->wParam)
     {
         RECT rect;
