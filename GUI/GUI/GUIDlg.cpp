@@ -264,6 +264,9 @@ BOOL CGUIDlg::PreTranslateMessage(MSG* pMsg)
             //    keyboardSendBackspaceKey();
             //    keyboardSendDeleteKey();
             //}
+
+            //another solution is stopping user input anything to that field
+
             keyboardSendUnicodeInput("85900");
             leftButtonClick(rect.left + 359, rect.top + 330);
             return true;
