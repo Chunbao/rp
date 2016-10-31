@@ -42,6 +42,9 @@ const int RELATIVE_BOTTOM = 357;
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
+
+// @todo, fix offset caused by dialog title and frame area (width=8,height=30)
+// @todo, retrived from this function -> GetSystemMetrics
 const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
@@ -123,7 +126,7 @@ Image::Image(HDC DC, int X, int Y, int Width, int Height) : Pixels(), width(Widt
 
 
 
-void GetScreenShot(int relativeWidth, int relativeHeight, int absoluteLeft, int absoluteTop)
+void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
 {
 	int x1, y1, x2, y2, w, h;
 
@@ -167,8 +170,13 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
     x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    w = x2 - x1;
-    h = y2 - y1;
+    
+    RECT rect;
+    GetWindowRect(WindowFromDC(h1), &rect);
+    //w = x2 - x1;
+    //h = y2 - y1;
+    w = rect.right - rect.left;
+    h = rect.bottom - rect.top;
 
     // copy screen to bitmap
     //HDC     hScreen = GetDC(NULL);
@@ -176,7 +184,7 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     HDC     hDC = CreateCompatibleDC(hScreen);
     HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
     HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
-    BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, x1, y1, SRCCOPY);
+    BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, -DIALOG_FRAME_LEFT_WIDTH, -DIALOG_FRAME_TOP_HEIGHT, SRCCOPY);
 
     // save bitmap to clipboard
     OpenClipboard(NULL);
@@ -243,7 +251,7 @@ cv::Mat hwnd2mat(HWND hwnd) {
     StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
     GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
 
-                                                                                                       // avoid memory leak
+    // avoid memory leak
     DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
 
     return src;
@@ -480,8 +488,11 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 		{
 			RECT rect;
 			GetWindowRect(&rect);
+
+            RECT rect1;
+            GetClientRect(&rect1);
+
 			char coordinates[60];
-			//sprintf(coordinates, "%d, %d, %d, %d",rect.left, rect.top, rect.right, rect.bottom);
 
 			LONG horizonCoordinate = rect.left;
 			LONG verticalCoordinate = rect.top;
@@ -489,6 +500,13 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 			LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
 			LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
 
+            //display result
+			sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
+				    captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+			editorMy.SetWindowTextA(coordinates);
+		}
+        else if (pMsg->wParam == VK_F6)
+        {
             /// Create windows
             std::string image_window("XXXXXX");
             cv::namedWindow(image_window, CV_WINDOW_AUTOSIZE);
@@ -498,13 +516,13 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
             cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
 
-            //cv::Point capturedPosition = captureTemplate("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
-            cv::Point capturedPosition(0, 0);
+            cv::Point capturedPosition = captureTemplate("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
+            //cv::Point capturedPosition(0, 0);
             //display result
-			sprintf(coordinates, "%d, %d, %d, %d, %s, %d, %d", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
-				captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(), capturedPosition.x, capturedPosition.y);
-			editorMy.SetWindowTextA(coordinates);
-		}
+            char coordinates[60];
+            sprintf(coordinates, "%d, %d", capturedPosition.x, capturedPosition.y);
+            editorMy.SetWindowTextA(coordinates);
+        }
 	}
 
 	if (BN_CLICKED == pMsg->wParam)
@@ -529,9 +547,6 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
 std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
 {
-	RECT rect;
-	GetWindowRect(&rect);
-	
 #if defined _WIN32 || defined _WIN64
 	
 	//HWND SomeWindowHandle = GetDesktopWindow();
@@ -539,14 +554,11 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 	//HDC DC = GetDC(SomeWindowHandle);
 	HDC DC = GetDC()->m_hDC;
     
-    
-    // @todo, current dialog's hDC (image area)
+    // @todo, current dialog's client area
     //GetScreenShotDialog(DC);
     //return std::string("test");
 
-
-    // @todo, fix offset caused by dialog title and frame area (width=8,height=30)
-	Image Img = Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT, 
+	Image Img = Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT,
                       relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
 	
 	//ReleaseDC(SomeWindowHandle, DC);
@@ -554,11 +566,11 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 #else
 	Image Img = Image(some_pixel_pointer, 200, 200); //pointer to pixels..
 #endif
-	
 
-	
     // For testing purpose
-	//GetScreenShot(relativeRight - relativeLeft, relativeBottom - relativeTop, rect.left + relativeLeft, rect.top + relativeTop);
+    //RECT rect;
+    //GetWindowRect(&rect);
+	//GetScreenShot(rect.left + relativeLeft, rect.top + relativeTop, relativeRight - relativeLeft, relativeBottom - relativeTop);
 
 	//std::unique_ptr<tesseract::TessBaseAPI> tesseract_ptr(new tesseract::TessBaseAPI());
 	tesseract::TessBaseAPI tesseract_ptr;
@@ -581,6 +593,7 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
     //@todo, make sure file is removed beforehand. Or in memory.
     //                                             solve the Mat.type() dismatch
+
     cv::imwrite("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", dialogShot);
     cv::Mat img = cv::imread("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", 1);
     cv::Mat templ = cv::imread(templateFile, 1);
