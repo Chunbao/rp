@@ -48,12 +48,11 @@ const int RELATIVE_BOTTOM = 357;
 const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
-//time
-//const int RELATIVE_LEFT = 266;
-//const int RELATIVE_TOP = 482;
-//const int RELATIVE_RIGHT = 312;
-//const int RELATIVE_BOTTOM = 495;
-
+const std::string     OK_BUTTON_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\ok.png");
+const std::string CANCEL_BUTTON_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
+//@todo, make it im memory
+//@todo, support Chinese
+const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg");
 
 class Image
 {
@@ -215,15 +214,15 @@ cv::Mat hwnd2mat(HWND hwnd) {
     SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
 
     RECT windowsize;    // get the height and width of the screen
-    GetClientRect(hwnd, &windowsize);
+    GetWindowRect(hwnd, &windowsize);
 
     srcheight = windowsize.bottom;
     srcwidth = windowsize.right;
 
     //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
     //width = windowsize.right / 2;
-    height = windowsize.bottom/* - windowsize.top*/;  //change this to whatever size you want to resize to
-    width = windowsize.right/* - windowsize.left*/;
+    height = windowsize.bottom - windowsize.top;  //change this to whatever size you want to resize to
+    width = windowsize.right - windowsize.left;
 
     //src.create(height, width, CV_8UC4);
     src.create(height, width, CV_32FC1);
@@ -516,7 +515,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
             cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
 
-            cv::Point capturedPosition = captureTemplate("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
+            cv::Point capturedPosition = captureTemplate(CANCEL_BUTTON_FILE);
             //cv::Point capturedPosition(0, 0);
             //display result
             char coordinates[60];
@@ -591,11 +590,10 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
     cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
-    //@todo, make sure file is removed beforehand. Or in memory.
-    //                                             solve the Mat.type() dismatch
-
-    cv::imwrite("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", dialogShot);
-    cv::Mat img = cv::imread("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg", 1);
+    
+    int res = remove(DIALOG_CAPTURE_TMP.c_str());
+    cv::imwrite(DIALOG_CAPTURE_TMP, dialogShot);
+    cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
     cv::Mat templ = cv::imread(templateFile, 1);
     cv::Mat result;
     int match_method = 0;
