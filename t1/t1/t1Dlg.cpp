@@ -48,11 +48,18 @@ const int RELATIVE_BOTTOM = 357;
 const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
-const std::string     OK_BUTTON_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\ok.png");
-const std::string CANCEL_BUTTON_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\cancel.png");
+const cv::Point PRICE_INPUT(792, 491);
+const cv::Point PRICE_CONFIRM(910, 492);
+
+const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.png");
+const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.png");
+const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.jpg");
 //@todo, make it im memory
 //@todo, support Chinese
-const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t2-cpp11\\testdata\\Capture_tmp.jpg");
+//const std::string BUTTON_OK_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\ok.png");
+//const std::string BUTTON_CANCEL_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\cancel.png");
+//const std::string DIALOG_CAPTURE_TMP("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\Capture_tmp.jpg");
+
 
 class Image
 {
@@ -122,7 +129,6 @@ Image::Image(HDC DC, int X, int Y, int Width, int Height) : Pixels(), width(Widt
 	ReleaseDC(nullptr, MemDC);
 }
 #endif
-
 
 
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
@@ -199,6 +205,67 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
 }
 
 
+
+// http://stackoverflow.com/questions/14148758/how-to-capture-the-desktop-in-opencv-ie-turn-a-bitmap-into-a-mat
+cv::Mat hwnd2mat(HWND hwnd) {
+
+    HDC hwindowDC, hwindowCompatibleDC;
+
+    int height, width, srcheight, srcwidth;
+    HBITMAP hbwindow;
+    cv::Mat src;
+    BITMAPINFOHEADER  bi;
+
+    hwindowDC = GetDC(hwnd);
+    hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
+    SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
+
+    RECT windowsize;    // get the height and width of the screen
+    GetWindowRect(hwnd, &windowsize);
+
+    srcheight = windowsize.bottom;
+    srcwidth = windowsize.right;
+
+    //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
+    //width = windowsize.right / 2;
+    height = windowsize.bottom - windowsize.top;  //change this to whatever size you want to resize to
+    width = windowsize.right - windowsize.left;
+
+    //src.create(height, width, CV_8UC4); // OK code
+    src.create(height, width, CV_8UC4); //CV_32FC1??? wrong
+
+                                        // create a bitmap
+    hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
+    bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
+    bi.biWidth = width;
+    bi.biHeight = -height;  //this is the line that makes it draw upside down or not
+    bi.biPlanes = 1;
+    bi.biBitCount = 32;
+
+    bi.biCompression = BI_RGB;
+    bi.biSizeImage = 0;
+    bi.biXPelsPerMeter = 0;
+    bi.biYPelsPerMeter = 0;
+    bi.biClrUsed = 0;
+    bi.biClrImportant = 0;
+
+    // use the previously created device context with the bitmap
+    SelectObject(hwindowCompatibleDC, hbwindow);
+
+    // copy from the window device context to the bitmap device context
+    //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+    StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, -DIALOG_FRAME_LEFT_WIDTH, -DIALOG_FRAME_TOP_HEIGHT, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+    GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
+
+                                                                                                       // avoid memory leak
+    DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
+
+    return src;
+}
+
+
+
+/*
 //@todo, the screen got is black
 cv::Mat hwnd2mat(HWND hwnd) {
 
@@ -255,9 +322,96 @@ cv::Mat hwnd2mat(HWND hwnd) {
 
     return src;
 }
+*/
 
 
+namespace IPT { // Virtual input of mouse of keyboard
+    // Mouse click event
+    // http://stackoverflow.com/questions/5789843/how-i-can-simulate-a-double-mouse-click-on-window-i-khow-handle-on-x-y-coord
+    // http://www.cplusplus.com/forum/lounge/17053/
+    //sentInput
+    //sendmessage
+    //postmessage
+    void mouseMove(int x, int y)
+    {
+        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+        double fx = x*(65535.0f / fScreenWidth);
+        double fy = y*(65535.0f / fScreenHeight);
+        INPUT  Input = { 0 };
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+        Input.mi.dx = fx;
+        Input.mi.dy = fy;
+        ::SendInput(1, &Input, sizeof(INPUT));
+    }
 
+    void leftButtonClick(int x, int y)
+    {
+        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+        double fx = x*(65535.0f / fScreenWidth);
+        double fy = y*(65535.0f / fScreenHeight);
+        INPUT  Input = { 0 };
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+        Input.mi.dx = fx;
+        Input.mi.dy = fy;
+        ::SendInput(1, &Input, sizeof(INPUT));
+    }
+
+    void keyboardSendBackspaceKey()
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = 0;
+        input_down.ki.wScan = 0;
+        input_down.ki.wVk = VK_BACK;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = 0;
+        input_up.ki.wVk = VK_BACK;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+        SendInput(1, &input_up, sizeof(input_up));//keyup 
+    }
+
+    void keyboardSendDeleteKey()
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = 0;
+        input_down.ki.wScan = 0;
+        input_down.ki.wVk = VK_DELETE;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = 0;
+        input_up.ki.wVk = VK_DELETE;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+        SendInput(1, &input_up, sizeof(input_up));//keyup 
+    }
+
+    void keyboardSendUnicodeInput(std::string message)
+    {
+        for (int i = 0; i < message.size(); i++)
+        {
+            INPUT input_down = { 0 };
+            input_down.type = INPUT_KEYBOARD;
+            input_down.ki.dwFlags = KEYEVENTF_UNICODE;
+            input_down.ki.wScan = (short)message.at(i);
+            input_down.ki.wVk = 0;
+            SendInput(1, &input_down, sizeof(input_down));//keydown     
+            INPUT input_up = { 0 };
+            input_up.type = INPUT_KEYBOARD;
+            input_up.ki.wScan = (short)message.at(i);
+            input_up.ki.wVk = 0;
+            input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP | KEYEVENTF_UNICODE);
+            SendInput(1, &input_up, sizeof(input_up));//keyup      
+        }
+    }
+
+}
 
 // CAboutDlg dialog used for App About
 
@@ -507,20 +661,36 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         else if (pMsg->wParam == VK_F6)
         {
             /// Create windows
-            std::string image_window("XXXXXX");
-            cv::namedWindow(image_window, CV_WINDOW_AUTOSIZE);
+            //std::string image_window("XXXXXX");
+            //cv::namedWindow(image_window, CV_WINDOW_AUTOSIZE);
             //namedWindow(result_window, CV_WINDOW_AUTOSIZE);
             /// Create Trackbar
-            int match_method(0);
-            char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
-            cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
+            //int match_method(0);
+            //char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
+            //cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
 
-            cv::Point capturedPosition = captureTemplate(CANCEL_BUTTON_FILE);
-            //cv::Point capturedPosition(0, 0);
+            //cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
+
             //display result
-            char coordinates[60];
-            sprintf(coordinates, "%d, %d", capturedPosition.x, capturedPosition.y);
-            editorMy.SetWindowTextA(coordinates);
+            //char coordinates[60];
+            //sprintf(coordinates, "%d, %d", capturedPosition.x, capturedPosition.y);
+            //editorMy.SetWindowTextA(coordinates);
+
+            //click button
+            RECT rect;
+            GetWindowRect(&rect);
+            IPT::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
+            IPT::keyboardSendUnicodeInput(captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+            Sleep(3000); //sleep 3 seconds
+            IPT::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
+        }
+        else if (pMsg->wParam == VK_RETURN)
+        {
+            cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+            RECT rect;
+            GetWindowRect(&rect);
+            Sleep(5000); //sleep 3 seconds
+            IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
         }
 	}
 
@@ -587,6 +757,58 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 	return std::string(utf8_text_ptr);
 }
 
+
+cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
+{
+    cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
+
+    //@todo, there will be a crash if do NOT save to local disk
+    int res = remove(DIALOG_CAPTURE_TMP.c_str());
+    cv::imwrite(DIALOG_CAPTURE_TMP, dialogShot);
+    cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
+    remove(DIALOG_CAPTURE_TMP.c_str());
+
+    cv::Mat templ = cv::imread(templateFile, 1);
+    cv::Mat result;
+    int match_method = 0;
+    int max_Trackbar = 5;
+
+    //char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
+    //createTrackbar(trackbar_label, image_window, &match_method, max_Trackbar, MatchingMethod);
+    /// Create the result matrix
+    int result_cols = img.cols - templ.cols + 1;
+    int result_rows = img.rows - templ.rows + 1;
+
+    result.create(result_rows, result_cols, CV_32FC1);
+
+    /// Do the Matching and Normalize
+    matchTemplate(img, templ, result, match_method);
+    normalize(result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
+
+    /// Localizing the best match with minMaxLoc
+    double minVal; double maxVal; cv::Point minLoc; cv::Point maxLoc;
+    cv::Point matchLoc;
+
+    minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
+
+    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
+    if (match_method == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED)
+    {
+        matchLoc = minLoc;
+    }
+    else
+    {
+        matchLoc = maxLoc;
+    }
+
+    /// Show me what you got
+    //rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
+    //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
+    return  cv::Point(matchLoc.x + templ.cols / 2, matchLoc.y + templ.rows / 2);
+}
+
+
+/*
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
     cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
@@ -632,3 +854,4 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
     return  cv::Point(matchLoc.x + templ.cols/2, matchLoc.y + templ.rows/2);
 }
+*/
