@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "afxwin.h"
 
 
 // CGUIDlg dialog
@@ -33,4 +34,6 @@ protected:
 	
 	
 	bool flag;
+public:
+    CEdit textEditor;
 };

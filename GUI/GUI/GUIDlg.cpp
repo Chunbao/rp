@@ -56,7 +56,8 @@ CGUIDlg::CGUIDlg(CWnd* pParent /*=NULL*/)
 
 void CGUIDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_EDIT1, textEditor);
 }
 
 BEGIN_MESSAGE_MAP(CGUIDlg, CDialog)
