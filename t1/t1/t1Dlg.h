@@ -72,4 +72,18 @@ private:
     CEdit editorMy;
 	// display information pannel
 	CEdit infoPanelEditor;
+
+    int m_bidPrice;
+
+    time_t m_timer;
+
+    enum STATE_MACHINE
+    {
+        STATE_NONE,
+        STATE_PRICE_INPUT,
+        STATE_PRICE_CONFIRM,
+        STATE_PRICE_SEND
+    };
+
+    STATE_MACHINE m_stateMachine;
 };

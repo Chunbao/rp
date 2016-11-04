@@ -14,6 +14,7 @@
     <ProjectGuid>{4AA7160B-7C8A-4CF7-BD65-68DC61B25CEA}</ProjectGuid>
     <RootNamespace>t1</RootNamespace>
     <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -40,7 +41,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>14.0.25123.0</_ProjectFileVersion>
+    <_ProjectFileVersion>14.0.23107.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -60,7 +61,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\leptonica;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\tesseract;D:\workspace\test\bmatch\3rd\opencv\build\include;D:\workspace\test\bmatch\3rd\BuildFolder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\leptonica;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\include\tesseract;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -75,7 +76,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\lib;D:\workspace\test\bmatch\3rd\BuildFolder\lib;D:\workspace\test\bmatch\3rd\opencv\opencv_build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\andrew\Desktop\rp\trunk\t1\3rd\BuildFolder\lib;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\opencv\opencv_build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>

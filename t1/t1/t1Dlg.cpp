@@ -35,10 +35,17 @@
 //using namespace cv;
 
 //price
-const int RELATIVE_LEFT = 750;
-const int RELATIVE_TOP = 335;
-const int RELATIVE_RIGHT = 809;
-const int RELATIVE_BOTTOM = 357;
+//const int RELATIVE_LEFT = 750;
+//const int RELATIVE_TOP = 335;
+//const int RELATIVE_RIGHT = 809;
+//const int RELATIVE_BOTTOM = 357;
+
+//backup price
+const int RELATIVE_LEFT = 267;
+const int RELATIVE_TOP = 480;
+const int RELATIVE_RIGHT = 314;
+const int RELATIVE_BOTTOM = 495;
+
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -263,68 +270,6 @@ cv::Mat hwnd2mat(HWND hwnd) {
     return src;
 }
 
-
-
-/*
-//@todo, the screen got is black
-cv::Mat hwnd2mat(HWND hwnd) {
-
-    HDC hwindowDC, hwindowCompatibleDC;
-
-    int height, width, srcheight, srcwidth;
-    HBITMAP hbwindow;
-    cv::Mat src;
-    BITMAPINFOHEADER  bi;
-
-    hwindowDC = GetDC(hwnd);
-    hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
-    SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
-
-    RECT windowsize;    // get the height and width of the screen
-    GetWindowRect(hwnd, &windowsize);
-
-    srcheight = windowsize.bottom;
-    srcwidth = windowsize.right;
-
-    //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
-    //width = windowsize.right / 2;
-    height = windowsize.bottom - windowsize.top;  //change this to whatever size you want to resize to
-    width = windowsize.right - windowsize.left;
-
-    //src.create(height, width, CV_8UC4);
-    src.create(height, width, CV_32FC1);
-
-    // create a bitmap
-    hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
-    bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
-    bi.biWidth = width;
-    bi.biHeight = -height;  //this is the line that makes it draw upside down or not
-    bi.biPlanes = 1;
-    bi.biBitCount = 32;
-
-    bi.biCompression = BI_RGB;
-    bi.biSizeImage = 0;
-    bi.biXPelsPerMeter = 0;
-    bi.biYPelsPerMeter = 0;
-    bi.biClrUsed = 0;
-    bi.biClrImportant = 0;
-
-    // use the previously created device context with the bitmap
-    SelectObject(hwindowCompatibleDC, hbwindow);
-    
-    // copy from the window device context to the bitmap device context
-    //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
-    StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
-    GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
-
-    // avoid memory leak
-    DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
-
-    return src;
-}
-*/
-
-
 namespace IPT { // Virtual input of mouse of keyboard
     // Mouse click event
     // http://stackoverflow.com/questions/5789843/how-i-can-simulate-a-double-mouse-click-on-window-i-khow-handle-on-x-y-coord
@@ -394,7 +339,7 @@ namespace IPT { // Virtual input of mouse of keyboard
 
     void keyboardSendUnicodeInput(std::string message)
     {
-        for (int i = 0; i < message.size(); i++)
+        for (int i = 0; i < message.size()-2; i++)
         {
             INPUT input_down = { 0 };
             input_down.type = INPUT_KEYBOARD;
@@ -456,6 +401,8 @@ END_DHTML_EVENT_MAP()
 
 Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 	: CDHtmlDialog(Ct1Dlg::IDD, Ct1Dlg::IDH, pParent)
+    , m_stateMachine(STATE_NONE)
+    , m_bidPrice(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -530,7 +477,7 @@ BOOL Ct1Dlg::OnInitDialog()
 	CString strURL("http://moni.51hupai.org/");
 	if(false/*if registered*/)
     {
-        CString strURL("http://test.alltobid.com/");
+        strURL= "http://test.alltobid.com/";
     }
     m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
 
@@ -631,7 +578,14 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 		if (pMsg->wParam == VK_RETURN)
 		{
 			pMsg->wParam = VK_TAB;
-			m_pBrowserMy.Refresh();
+			//m_pBrowserMy.Refresh();
+            //cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+            //IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+            //wait to click send
+            if (m_stateMachine == STATE_PRICE_CONFIRM)
+            {
+                m_stateMachine = STATE_PRICE_SEND;
+            }
 		}
 		else if (pMsg->wParam == VK_F5)
 		{
@@ -680,19 +634,56 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             RECT rect;
             GetWindowRect(&rect);
             IPT::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
-            IPT::keyboardSendUnicodeInput(captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
-            Sleep(3000); //sleep 3 seconds
-            IPT::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
-        }
-        else if (pMsg->wParam == VK_RETURN)
-        {
-            cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-            RECT rect;
-            GetWindowRect(&rect);
-            Sleep(5000); //sleep 3 seconds
-            IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+            std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
+            if (price.empty())
+            {
+                return true;
+            }
+
+            IPT::keyboardSendUnicodeInput(price);
+            m_bidPrice = atof(price.c_str());
+            m_stateMachine = STATE_PRICE_INPUT;
+            time(&m_timer);
+            return true;
         }
 	}
+
+    if (m_stateMachine != STATE_NONE)
+    {
+        if (m_stateMachine == STATE_PRICE_INPUT)
+        {
+            time_t now;
+            time(&now);
+            double seconds = difftime(now, m_timer);
+            if (seconds > 3)
+            {
+                RECT rect;
+                GetWindowRect(&rect);
+                IPT::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
+                m_stateMachine = STATE_PRICE_CONFIRM;
+            }
+        }
+
+        if (m_stateMachine == STATE_PRICE_SEND)
+        {
+            while (true)
+            {
+                std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
+                int currentPrice = atof(price.c_str());
+                if (currentPrice >= m_bidPrice + 300)
+                {
+                    RECT rect;
+                    GetWindowRect(&rect);
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                    IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                    m_stateMachine = STATE_NONE;
+                    break;
+                }
+                continue;
+            }
+            
+        }
+    }
 
 	if (BN_CLICKED == pMsg->wParam)
 	{
@@ -806,52 +797,3 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
     return  cv::Point(matchLoc.x + templ.cols / 2, matchLoc.y + templ.rows / 2);
 }
-
-
-/*
-cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
-{
-    cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
-    
-    int res = remove(DIALOG_CAPTURE_TMP.c_str());
-    cv::imwrite(DIALOG_CAPTURE_TMP, dialogShot);
-    cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
-    cv::Mat templ = cv::imread(templateFile, 1);
-    cv::Mat result;
-    int match_method = 0;
-    int max_Trackbar = 5;
-
-    //char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
-    //createTrackbar(trackbar_label, image_window, &match_method, max_Trackbar, MatchingMethod);
-    /// Create the result matrix
-    int result_cols = img.cols - templ.cols + 1;
-    int result_rows = img.rows - templ.rows + 1;
-
-    result.create(result_rows, result_cols, CV_32FC1);
-
-    /// Do the Matching and Normalize
-    matchTemplate(img, templ, result, match_method);
-    normalize(result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
-
-    /// Localizing the best match with minMaxLoc
-    double minVal; double maxVal; cv::Point minLoc; cv::Point maxLoc;
-    cv::Point matchLoc;
-
-    minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
-
-    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-    if (match_method == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED)
-    {
-        matchLoc = minLoc;
-    }
-    else
-    {
-        matchLoc = maxLoc;
-    }
-
-    /// Show me what you got
-    //rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
-    //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
-    return  cv::Point(matchLoc.x + templ.cols/2, matchLoc.y + templ.rows/2);
-}
-*/
