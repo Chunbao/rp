@@ -23,3 +23,7 @@ opencv_superres2413d.lib
 opencv_ts2413d.lib
 opencv_video2413d.lib
 opencv_videostab2413d.lib
+
+
+Make webbrowser use higher IE version
+https://blogs.msdn.microsoft.com/ie/2008/03/18/webbrowser-control-rendering-modes-in-ie8/
