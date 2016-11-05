@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "t1.h"
 #include "t1Dlg.h"
+#include "ImgUtil.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -30,6 +31,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2\imgproc\imgproc_c.h>
 
 //using namespace std;
 //using namespace cv;
@@ -67,75 +69,6 @@ const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\
 //const std::string BUTTON_CANCEL_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\cancel.png");
 //const std::string DIALOG_CAPTURE_TMP("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\Capture_tmp.jpg");
 
-
-class Image
-{
-private:
-	std::vector<std::uint8_t> Pixels;
-	std::uint32_t width, height;
-	std::uint16_t BitsPerPixel;
-
-	void Flip(void* In, void* Out, int width, int height, unsigned int Bpp);
-
-public:
-#if defined _WIN32 || defined _WIN64
-	explicit Image(HDC DC, int X, int Y, int Width, int Height);
-#endif
-
-	inline std::uint16_t GetBitsPerPixel() { return this->BitsPerPixel; }
-	inline std::uint16_t GetBytesPerPixel() { return this->BitsPerPixel / 8; }
-	inline std::uint16_t GetBytesPerScanLine() { return (this->BitsPerPixel / 8) * this->width; }
-	inline int GetWidth() const { return this->width; }
-	inline int GetHeight() const { return this->height; }
-	inline const std::uint8_t* GetPixels() { return this->Pixels.data(); }
-};
-
-void Image::Flip(void* In, void* Out, int width, int height, unsigned int Bpp)
-{
-	unsigned long Chunk = (Bpp > 24 ? width * 4 : width * 3 + width % 4);
-	unsigned char* Destination = static_cast<unsigned char*>(Out);
-	unsigned char* Source = static_cast<unsigned char*>(In) + Chunk * (height - 1);
-
-	while (Source != In)
-	{
-		std::memcpy(Destination, Source, Chunk);
-		Destination += Chunk;
-		Source -= Chunk;
-	}
-}
-
-#if defined _WIN32 || defined _WIN64
-Image::Image(HDC DC, int X, int Y, int Width, int Height) : Pixels(), width(Width), height(Height), BitsPerPixel(32)
-{
-	BITMAP Bmp = { 0 };
-	HBITMAP hBmp = reinterpret_cast<HBITMAP>(GetCurrentObject(DC, OBJ_BITMAP));
-
-	if (GetObject(hBmp, sizeof(BITMAP), &Bmp) == 0)
-		throw std::runtime_error("BITMAP DC NOT FOUND.");
-
-	RECT area = { X, Y, X + Width, Y + Height };
-	HWND Window = WindowFromDC(DC);
-	GetClientRect(Window, &area);
-
-	HDC MemDC = GetDC(nullptr);
-	HDC SDC = CreateCompatibleDC(MemDC);
-	HBITMAP hSBmp = CreateCompatibleBitmap(MemDC, width, height);
-	DeleteObject(SelectObject(SDC, hSBmp));
-
-	BitBlt(SDC, 0, 0, width, height, DC, X, Y, SRCCOPY);
-	unsigned int data_size = ((width * BitsPerPixel + 31) / 32) * 4 * height;
-	std::vector<std::uint8_t> Data(data_size);
-	this->Pixels.resize(data_size);
-
-	BITMAPINFO Info = { sizeof(BITMAPINFOHEADER), static_cast<long>(width), static_cast<long>(height), 1, BitsPerPixel, BI_RGB, data_size, 0, 0, 0, 0 };
-	GetDIBits(SDC, hSBmp, 0, height, &Data[0], &Info, DIB_RGB_COLORS);
-	this->Flip(&Data[0], &Pixels[0], width, height, BitsPerPixel);
-
-	DeleteDC(SDC);
-	DeleteObject(hSBmp);
-	ReleaseDC(nullptr, MemDC);
-}
-#endif
 
 
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
@@ -211,64 +144,6 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     DeleteObject(hBitmap);
 }
 
-
-
-// http://stackoverflow.com/questions/14148758/how-to-capture-the-desktop-in-opencv-ie-turn-a-bitmap-into-a-mat
-cv::Mat hwnd2mat(HWND hwnd) {
-
-    HDC hwindowDC, hwindowCompatibleDC;
-
-    int height, width, srcheight, srcwidth;
-    HBITMAP hbwindow;
-    cv::Mat src;
-    BITMAPINFOHEADER  bi;
-
-    hwindowDC = GetDC(hwnd);
-    hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
-    SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
-
-    RECT windowsize;    // get the height and width of the screen
-    GetWindowRect(hwnd, &windowsize);
-
-    srcheight = windowsize.bottom;
-    srcwidth = windowsize.right;
-
-    //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
-    //width = windowsize.right / 2;
-    height = windowsize.bottom - windowsize.top;  //change this to whatever size you want to resize to
-    width = windowsize.right - windowsize.left;
-
-    //src.create(height, width, CV_8UC4); // OK code
-    src.create(height, width, CV_8UC4); //CV_32FC1??? wrong
-
-                                        // create a bitmap
-    hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
-    bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
-    bi.biWidth = width;
-    bi.biHeight = -height;  //this is the line that makes it draw upside down or not
-    bi.biPlanes = 1;
-    bi.biBitCount = 32;
-
-    bi.biCompression = BI_RGB;
-    bi.biSizeImage = 0;
-    bi.biXPelsPerMeter = 0;
-    bi.biYPelsPerMeter = 0;
-    bi.biClrUsed = 0;
-    bi.biClrImportant = 0;
-
-    // use the previously created device context with the bitmap
-    SelectObject(hwindowCompatibleDC, hbwindow);
-
-    // copy from the window device context to the bitmap device context
-    //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
-    StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, -DIALOG_FRAME_LEFT_WIDTH, -DIALOG_FRAME_TOP_HEIGHT, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
-    GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
-
-                                                                                                       // avoid memory leak
-    DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
-
-    return src;
-}
 
 namespace IPT { // Virtual input of mouse of keyboard
     // Mouse click event
@@ -718,7 +593,7 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
     //GetScreenShotDialog(DC);
     //return std::string("test");
 
-	Image Img = Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT,
+	img::Image Img = img::Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT,
                       relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
 	
 	//ReleaseDC(SomeWindowHandle, DC);
@@ -751,7 +626,7 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
-    cv::Mat dialogShot = hwnd2mat(WindowFromDC(GetDC()->m_hDC));
+    cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);
 
     //@todo, there will be a crash if do NOT save to local disk
     int res = remove(DIALOG_CAPTURE_TMP.c_str());
