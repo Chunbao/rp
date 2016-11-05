@@ -40,3 +40,16 @@ namespace img
     };
 }
 
+
+namespace ipt {
+
+    void mouseMove(int x, int y);
+
+    void leftButtonClick(int x, int y);
+
+    void keyboardSendBackspaceKey();
+
+    void keyboardSendDeleteKey();
+
+    void keyboardSendUnicodeInput(std::string message);
+}

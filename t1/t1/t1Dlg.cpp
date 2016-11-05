@@ -145,94 +145,6 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
 }
 
 
-namespace IPT { // Virtual input of mouse of keyboard
-    // Mouse click event
-    // http://stackoverflow.com/questions/5789843/how-i-can-simulate-a-double-mouse-click-on-window-i-khow-handle-on-x-y-coord
-    // http://www.cplusplus.com/forum/lounge/17053/
-    //sentInput
-    //sendmessage
-    //postmessage
-    void mouseMove(int x, int y)
-    {
-        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-        double fx = x*(65535.0f / fScreenWidth);
-        double fy = y*(65535.0f / fScreenHeight);
-        INPUT  Input = { 0 };
-        Input.type = INPUT_MOUSE;
-        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-        Input.mi.dx = fx;
-        Input.mi.dy = fy;
-        ::SendInput(1, &Input, sizeof(INPUT));
-    }
-
-    void leftButtonClick(int x, int y)
-    {
-        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-        double fx = x*(65535.0f / fScreenWidth);
-        double fy = y*(65535.0f / fScreenHeight);
-        INPUT  Input = { 0 };
-        Input.type = INPUT_MOUSE;
-        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
-        Input.mi.dx = fx;
-        Input.mi.dy = fy;
-        ::SendInput(1, &Input, sizeof(INPUT));
-    }
-
-    void keyboardSendBackspaceKey()
-    {
-        INPUT input_down = { 0 };
-        input_down.type = INPUT_KEYBOARD;
-        input_down.ki.dwFlags = 0;
-        input_down.ki.wScan = 0;
-        input_down.ki.wVk = VK_BACK;
-        SendInput(1, &input_down, sizeof(input_down));//keydown     
-        INPUT input_up = { 0 };
-        input_up.type = INPUT_KEYBOARD;
-        input_up.ki.wScan = 0;
-        input_up.ki.wVk = VK_BACK;
-        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
-        SendInput(1, &input_up, sizeof(input_up));//keyup 
-    }
-
-    void keyboardSendDeleteKey()
-    {
-        INPUT input_down = { 0 };
-        input_down.type = INPUT_KEYBOARD;
-        input_down.ki.dwFlags = 0;
-        input_down.ki.wScan = 0;
-        input_down.ki.wVk = VK_DELETE;
-        SendInput(1, &input_down, sizeof(input_down));//keydown     
-        INPUT input_up = { 0 };
-        input_up.type = INPUT_KEYBOARD;
-        input_up.ki.wScan = 0;
-        input_up.ki.wVk = VK_DELETE;
-        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
-        SendInput(1, &input_up, sizeof(input_up));//keyup 
-    }
-
-    void keyboardSendUnicodeInput(std::string message)
-    {
-        for (int i = 0; i < message.size()-2; i++)
-        {
-            INPUT input_down = { 0 };
-            input_down.type = INPUT_KEYBOARD;
-            input_down.ki.dwFlags = KEYEVENTF_UNICODE;
-            input_down.ki.wScan = (short)message.at(i);
-            input_down.ki.wVk = 0;
-            SendInput(1, &input_down, sizeof(input_down));//keydown     
-            INPUT input_up = { 0 };
-            input_up.type = INPUT_KEYBOARD;
-            input_up.ki.wScan = (short)message.at(i);
-            input_up.ki.wVk = 0;
-            input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP | KEYEVENTF_UNICODE);
-            SendInput(1, &input_up, sizeof(input_up));//keyup      
-        }
-    }
-
-}
-
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialog
@@ -508,14 +420,14 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             //click button
             RECT rect;
             GetWindowRect(&rect);
-            IPT::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
+            ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
             std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
             if (price.empty())
             {
                 return true;
             }
 
-            IPT::keyboardSendUnicodeInput(price);
+            ipt::keyboardSendUnicodeInput(price);
             m_bidPrice = atof(price.c_str());
             m_stateMachine = STATE_PRICE_INPUT;
             time(&m_timer);
@@ -534,7 +446,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             {
                 RECT rect;
                 GetWindowRect(&rect);
-                IPT::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
+                ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
                 m_stateMachine = STATE_PRICE_CONFIRM;
             }
         }
@@ -550,7 +462,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
                     RECT rect;
                     GetWindowRect(&rect);
                     cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                    IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                    ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
                     break;
                 }

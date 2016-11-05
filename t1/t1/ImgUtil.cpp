@@ -2,11 +2,8 @@
 #include "ImgUtil.h"
 
 
-
 namespace img
-
 {
-
     //http://www.newxing.com/Tech/Program/Cpp/695.html
     HBITMAP GetSrcBit(HDC hDC, int BitLeft, int BitTop, int BitWidth, int BitHeight)
     {
@@ -18,8 +15,9 @@ namespace img
         hBitmap = CreateCompatibleBitmap(hDC, BitWidth, BitHeight);
         hBitTemp = (HBITMAP)SelectObject(hBufDC, hBitmap);
         //得到位图缓冲区
-        StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight,
-            hDC, 0, 0, BitWidth, BitHeight, SRCCOPY);
+        //StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, 0, 0, BitWidth, BitHeight, SRCCOPY);
+        StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, BitLeft, BitTop, BitWidth, BitHeight, SRCCOPY);
+        
         //得到最终的位图信息
         hBitmap = (HBITMAP)SelectObject(hBufDC, hBitTemp);
         //释放内存
@@ -84,10 +82,8 @@ namespace img
     }
 
 
-
-
     // http://stackoverflow.com/questions/14148758/how-to-capture-the-desktop-in-opencv-ie-turn-a-bitmap-into-a-mat
-    cv::Mat hwnd2mat(HWND hwnd, int DIALOG_FRAME_LEFT_WIDTH, int DIALOG_FRAME_TOP_HEIGHT) {
+    cv::Mat hwnd2mat(HWND hwnd, int dialogFrameLeftWidth, int dialogFrameTopHeight) {
         HDC hwindowDC, hwindowCompatibleDC;
 
         int height, width, srcheight, srcwidth;
@@ -133,7 +129,7 @@ namespace img
 
         // copy from the window device context to the bitmap device context
         //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
-        StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, -DIALOG_FRAME_LEFT_WIDTH, -DIALOG_FRAME_TOP_HEIGHT, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+        StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, -dialogFrameLeftWidth, -dialogFrameTopHeight, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
         GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
                                                                              // avoid memory leak
         DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
@@ -191,3 +187,91 @@ namespace img
 }
 
 
+
+namespace ipt { // Virtual input of mouse of keyboard
+                // Mouse click event
+                // http://stackoverflow.com/questions/5789843/how-i-can-simulate-a-double-mouse-click-on-window-i-khow-handle-on-x-y-coord
+                // http://www.cplusplus.com/forum/lounge/17053/
+                //sentInput
+                //sendmessage
+                //postmessage
+    void mouseMove(int x, int y)
+    {
+        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+        double fx = x*(65535.0f / fScreenWidth);
+        double fy = y*(65535.0f / fScreenHeight);
+        INPUT  Input = { 0 };
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+        Input.mi.dx = fx;
+        Input.mi.dy = fy;
+        ::SendInput(1, &Input, sizeof(INPUT));
+    }
+
+    void leftButtonClick(int x, int y)
+    {
+        double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+        double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+        double fx = x*(65535.0f / fScreenWidth);
+        double fy = y*(65535.0f / fScreenHeight);
+        INPUT  Input = { 0 };
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+        Input.mi.dx = fx;
+        Input.mi.dy = fy;
+        ::SendInput(1, &Input, sizeof(INPUT));
+    }
+
+    void keyboardSendBackspaceKey()
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = 0;
+        input_down.ki.wScan = 0;
+        input_down.ki.wVk = VK_BACK;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = 0;
+        input_up.ki.wVk = VK_BACK;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+        SendInput(1, &input_up, sizeof(input_up));//keyup 
+    }
+
+    void keyboardSendDeleteKey()
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = 0;
+        input_down.ki.wScan = 0;
+        input_down.ki.wVk = VK_DELETE;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = 0;
+        input_up.ki.wVk = VK_DELETE;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+        SendInput(1, &input_up, sizeof(input_up));//keyup 
+    }
+
+    void keyboardSendUnicodeInput(std::string message)
+    {
+        for (int i = 0; i < message.size() - 2; i++)
+        {
+            INPUT input_down = { 0 };
+            input_down.type = INPUT_KEYBOARD;
+            input_down.ki.dwFlags = KEYEVENTF_UNICODE;
+            input_down.ki.wScan = (short)message.at(i);
+            input_down.ki.wVk = 0;
+            SendInput(1, &input_down, sizeof(input_down));//keydown     
+            INPUT input_up = { 0 };
+            input_up.type = INPUT_KEYBOARD;
+            input_up.ki.wScan = (short)message.at(i);
+            input_up.ki.wVk = 0;
+            input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP | KEYEVENTF_UNICODE);
+            SendInput(1, &input_up, sizeof(input_up));//keyup      
+        }
+    }
+
+}
