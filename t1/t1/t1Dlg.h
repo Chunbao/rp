@@ -57,7 +57,12 @@ protected:
 	DECLARE_DHTML_EVENT_MAP()
 	
 private:
-    std::string captureText(int x1, int y1, int x2, int y2);
+    bool manageUserEvent(MSG* pMsg);
+    void automateWorkFlow();
+
+    std::string captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
+    std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
+
     cv::Point captureTemplate(const std::string& templ);
 
 public:
@@ -82,7 +87,8 @@ private:
         STATE_NONE,
         STATE_PRICE_INPUT,
         STATE_PRICE_CONFIRM,
-        STATE_PRICE_SEND
+        STATE_PRICE_SEND,
+        STATE_PRICE_RESULT
     };
 
     STATE_MACHINE m_stateMachine;

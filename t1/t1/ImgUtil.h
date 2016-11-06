@@ -4,7 +4,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
-
+// http://docs.opencv.org/2.4/modules/core/doc/basic_structures.html#mat-type
+// @@@!!! online specification
 
 namespace img
 {
@@ -49,7 +50,19 @@ namespace ipt {
 
     void keyboardSendBackspaceKey();
 
+    void keyboardSendBackspaceKey(unsigned int times);
+
     void keyboardSendDeleteKey();
 
     void keyboardSendUnicodeInput(std::string message);
+}
+
+
+namespace utl
+{
+    inline bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight)
+    {
+        return (target.x > validLeft.x && target.x < validRight.x)
+            && (target.y > validLeft.y && target.y < validRight.y);
+    }
 }

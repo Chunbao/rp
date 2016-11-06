@@ -37,16 +37,20 @@
 //using namespace cv;
 
 //price
-//const int RELATIVE_LEFT = 750;
-//const int RELATIVE_TOP = 335;
-//const int RELATIVE_RIGHT = 809;
-//const int RELATIVE_BOTTOM = 357;
-
+const int RELATIVE_LEFT = 750;
+const int RELATIVE_TOP = 335;
+const int RELATIVE_RIGHT = 809;
+const int RELATIVE_BOTTOM = 357;
 //backup price
-const int RELATIVE_LEFT = 267;
-const int RELATIVE_TOP = 480;
-const int RELATIVE_RIGHT = 314;
-const int RELATIVE_BOTTOM = 495;
+//const int RELATIVE_LEFT = 267;
+//const int RELATIVE_TOP = 480;
+//const int RELATIVE_RIGHT = 314;
+//const int RELATIVE_BOTTOM = 495;
+
+const int PREDICT_ADD_PRICE = 300;
+const int INPUT_PRICE_DELAY = 1; //1s
+const cv::Point VALID_BUTTON_AREA_LEFT(552, 305);
+const cv::Point VALID_BUTTON_AREA_RIGHT(987, 605);
 
 
 //@todo, need to be replaced for compatiable problems
@@ -57,18 +61,20 @@ const int RELATIVE_BOTTOM = 495;
 const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
-const cv::Point PRICE_INPUT(792, 491);
+const cv::Point PRICE_INPUT(792 + 55/*right side of input*/, 491);
 const cv::Point PRICE_CONFIRM(910, 492);
 
-const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.png");
-const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.png");
-const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.jpg");
+const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
+const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
+const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
+const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
 //const std::string BUTTON_OK_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\ok.png");
 //const std::string BUTTON_CANCEL_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\cancel.png");
 //const std::string DIALOG_CAPTURE_TMP("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\Capture_tmp.jpg");
 
+const int TIMES_IMAGE_ENHANCEMENT = 3;
 
 
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
@@ -346,94 +352,121 @@ void Ct1Dlg::OnBnClickedButtonRefresh()
 
 BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 {
-	SYSTEMTIME sys_time;
-	GetLocalTime(&sys_time);
-	char systemTime[150];
-	sprintf(systemTime, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d\n", sys_time.wYear,
-		sys_time.wMonth,
-		sys_time.wDay,
-		sys_time.wHour,
-		sys_time.wMinute,
-		sys_time.wSecond,
-		sys_time.wMilliseconds,
-		sys_time.wDayOfWeek);
-	//editorMy.SetWindowTextA(systemTime);
-	//system("time");
-	//////////
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		if (pMsg->wParam == VK_RETURN)
-		{
-			pMsg->wParam = VK_TAB;
-			//m_pBrowserMy.Refresh();
-            //cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-            //IPT::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
-            //wait to click send
-            if (m_stateMachine == STATE_PRICE_CONFIRM)
-            {
-                m_stateMachine = STATE_PRICE_SEND;
-            }
-		}
-		else if (pMsg->wParam == VK_F5)
-		{
-			m_pBrowserMy.Refresh();
-		}
-		else if (pMsg->wParam == VK_F4)
-		{
-			RECT rect;
-			GetWindowRect(&rect);
+    // RT display info.
+    {
+        SYSTEMTIME sys_time;
+        GetLocalTime(&sys_time);
+        char systemTime[150];
+        sprintf(systemTime, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d\n", 
+            sys_time.wYear,
+            sys_time.wMonth,
+            sys_time.wDay,
+            sys_time.wHour,
+            sys_time.wMinute,
+            sys_time.wSecond,
+            sys_time.wMilliseconds,
+            sys_time.wDayOfWeek,
+            m_bidPrice);
+        SetWindowText(systemTime);
+        //editorMy.SetWindowTextA(systemTime);
+        //system("time");
 
-            RECT rect1;
-            GetClientRect(&rect1);
+        RECT rect;
+        GetWindowRect(&rect);
+        LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - rect.left;
+        LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - rect.top;
 
-			char coordinates[60];
+        char coordinates[30];
+        sprintf(coordinates, "%d, %d", RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
+        infoPanelEditor.SetWindowTextA(coordinates);
+    }
 
-			LONG horizonCoordinate = rect.left;
-			LONG verticalCoordinate = rect.top;
+    if (manageUserEvent(pMsg))
+    {
+        return true;
+    }
+	
+    automateWorkFlow();
 
-			LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
-			LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
+	return CDialog::PreTranslateMessage(pMsg);
+}
 
+bool Ct1Dlg::manageUserEvent(MSG* pMsg)
+{
+    //////////
+    if (pMsg->message == WM_KEYDOWN)
+    {
+        if (pMsg->wParam == VK_F1)
+        {
+            //@todo, check state
+            //m_pBrowserMy.GoBack();
+        }
+        else if (pMsg->wParam == VK_F2)
+        {
+            //@todo, check state
+            //m_pBrowserMy.GoBack();
+        }
+        else if (pMsg->wParam == VK_F5)
+        {
+            m_pBrowserMy.Refresh();
+        }
+        else if (pMsg->wParam == VK_F4)
+        {
             //display result
-			sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT,RELATIVE_TOP,RELATIVE_RIGHT,RELATIVE_BOTTOM,
-				    captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
-			editorMy.SetWindowTextA(coordinates);
-		}
+            char coordinates[60];
+            sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM,
+                captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+            editorMy.SetWindowTextA(coordinates);
+
+            //captureEnhancedText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM);
+        }
         else if (pMsg->wParam == VK_F6)
         {
-            /// Create windows
-            //std::string image_window("XXXXXX");
-            //cv::namedWindow(image_window, CV_WINDOW_AUTOSIZE);
-            //namedWindow(result_window, CV_WINDOW_AUTOSIZE);
-            /// Create Trackbar
-            //int match_method(0);
-            //char* trackbar_label = "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED";
-            //cv::createTrackbar(trackbar_label, image_window, &match_method, 5, nullptr);
-
-            //cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
-
-            //display result
-            //char coordinates[60];
-            //sprintf(coordinates, "%d, %d", capturedPosition.x, capturedPosition.y);
-            //editorMy.SetWindowTextA(coordinates);
-
-            //click button
+            if (m_stateMachine != STATE_NONE)
+            {
+                RECT rect;
+                GetWindowRect(&rect);
+                cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                {
+                    return true;
+                }
+            }
+            /// click button
             RECT rect;
             GetWindowRect(&rect);
             ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
+            ipt::keyboardSendBackspaceKey(7);
             std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
             if (price.empty())
             {
                 return true;
             }
 
-            ipt::keyboardSendUnicodeInput(price);
-            m_bidPrice = atof(price.c_str());
+            m_bidPrice = std::stoi(price);
+            std::string predicatePrice = std::to_string(m_bidPrice + PREDICT_ADD_PRICE);
+            ipt::keyboardSendUnicodeInput(predicatePrice);
+
             m_stateMachine = STATE_PRICE_INPUT;
             time(&m_timer);
             return true;
         }
-	}
+        else if (pMsg->wParam == VK_RETURN)
+        {
+            pMsg->wParam = VK_TAB;
+            //m_pBrowserMy.Refresh();
+            if (m_stateMachine == STATE_PRICE_CONFIRM)
+            {
+                time(&m_timer);
+                m_stateMachine = STATE_PRICE_SEND;
+            }
+        }
+    }
+
+    return false;
+}
+
+void Ct1Dlg::automateWorkFlow() {
 
     if (m_stateMachine != STATE_NONE)
     {
@@ -442,54 +475,69 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
             time_t now;
             time(&now);
             double seconds = difftime(now, m_timer);
-            if (seconds > 3)
+            if (seconds > INPUT_PRICE_DELAY)
             {
+                //@todo, happy flow case
                 RECT rect;
                 GetWindowRect(&rect);
                 ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
+                time(&m_timer);
                 m_stateMachine = STATE_PRICE_CONFIRM;
             }
         }
-
-        if (m_stateMachine == STATE_PRICE_SEND)
+        else if (m_stateMachine == STATE_PRICE_CONFIRM)
         {
-            while (true)
+            //@todo, refresh if captcha appears
+            // need precise match
+            // should never appear, promised by deleting
+            time_t now;
+            time(&now);
+            double seconds = difftime(now, m_timer);
+            if (seconds > INPUT_PRICE_DELAY)
             {
-                std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
-                int currentPrice = atof(price.c_str());
-                if (currentPrice >= m_bidPrice + 300)
+                //precise match OK button, to make sure no dialog
+                RECT rect;
+                GetWindowRect(&rect);
+                cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
+                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
-                    RECT rect;
-                    GetWindowRect(&rect);
-                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                    ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                }
+
+                time(&m_timer);
+            }
+        }
+        else if (m_stateMachine == STATE_PRICE_SEND)
+        {
+            RECT rect;
+            GetWindowRect(&rect);
+            cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+            ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+            time(&m_timer);
+            m_stateMachine = STATE_PRICE_RESULT;
+        }
+        else if (m_stateMachine == STATE_PRICE_RESULT)
+        {
+            time_t now;
+            time(&now);
+            double seconds = difftime(now, m_timer);
+            if (seconds > INPUT_PRICE_DELAY)
+            {
+                //precise match OK button, to make sure no dialog
+                RECT rect;
+                GetWindowRect(&rect);
+                cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
-                    break;
                 }
-                continue;
+                time(&m_timer);
             }
-            
         }
     }
 
-	if (BN_CLICKED == pMsg->wParam)
-	{
-		RECT rect;
-		GetWindowRect(&rect);
-        LONG horizonCoordinate = rect.left;
-		LONG verticalCoordinate = rect.top;
-		LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - horizonCoordinate;
-		LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - verticalCoordinate;
-
-		char coordinates[30];
-		sprintf(coordinates, "%d, %d", RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
-		infoPanelEditor.SetWindowTextA(coordinates);
-	}
-
-	return CDialog::PreTranslateMessage(pMsg);
 }
-
-
 
 
 std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
@@ -518,11 +566,7 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
     //RECT rect;
     //GetWindowRect(&rect);
 	//GetScreenShot(rect.left + relativeLeft, rect.top + relativeTop, relativeRight - relativeLeft, relativeBottom - relativeTop);
-
-	//std::unique_ptr<tesseract::TessBaseAPI> tesseract_ptr(new tesseract::TessBaseAPI());
 	tesseract::TessBaseAPI tesseract_ptr;
-
-	//tesseract_ptr->Init("/tesseract/tessdata", "eng");
 	tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
 	tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
 	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
@@ -535,6 +579,39 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 	return std::string(utf8_text_ptr);
 }
 
+std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
+{
+    HDC hdc = GetDC()->m_hDC;
+    HBITMAP bitmap = img::GetSrcBit(hdc, 
+        relativeLeft - DIALOG_FRAME_LEFT_WIDTH,
+        relativeTop - DIALOG_FRAME_TOP_HEIGHT, 
+        relativeRight - relativeLeft, 
+        relativeBottom - relativeTop);
+
+    //IplImage* source = img::hBitmap2Ipl(bitmap);
+    //
+    //// declare a destination IplImage object with correct size, depth and channels
+    //IplImage *destination = cvCreateImage(
+    //    cvSize((int)((source->width*TIMES_IMAGE_ENHANCEMENT) / 100), 
+    //        (int)((source->height*TIMES_IMAGE_ENHANCEMENT) / 100)),
+    //    source->depth, 
+    //    source->nChannels);
+
+    ////use cvResize to resize source to a destination image
+    //cvResize(source, destination);
+
+    //HBITMAP targetBitmap = img::IplImage2hBitmap(destination);
+
+    // save bitmap to clipboard
+    OpenClipboard();
+    EmptyClipboard();
+    SetClipboardData(CF_BITMAP, bitmap);
+    CloseClipboard();
+
+    ReleaseDC(GetDC());
+
+    return std::string("");
+}
 
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
@@ -559,6 +636,10 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 
     result.create(result_rows, result_cols, CV_32FC1);
 
+    int a = img.depth();
+    int b = templ.depth();
+    int c = img.type();
+    int d = templ.type();
     /// Do the Matching and Normalize
     matchTemplate(img, templ, result, match_method);
     normalize(result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());

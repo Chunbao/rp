@@ -44,6 +44,7 @@ namespace img
         return dst;
     }
 
+
     HBITMAP IplImage2hBitmap(IplImage* pImg)
     {
         BYTE tmp[sizeof(BITMAPINFO) + 1024];
@@ -239,6 +240,14 @@ namespace ipt { // Virtual input of mouse of keyboard
         SendInput(1, &input_up, sizeof(input_up));//keyup 
     }
 
+    void keyboardSendBackspaceKey(unsigned int times)
+    {
+        for (int i = 0; i < times; ++i)
+        {
+            keyboardSendBackspaceKey();
+        }
+    }
+
     void keyboardSendDeleteKey()
     {
         INPUT input_down = { 0 };
@@ -257,7 +266,8 @@ namespace ipt { // Virtual input of mouse of keyboard
 
     void keyboardSendUnicodeInput(std::string message)
     {
-        for (int i = 0; i < message.size() - 2; i++)
+        assert(message.size() == 5);
+        for (int i = 0; i < message.size(); i++)
         {
             INPUT input_down = { 0 };
             input_down.type = INPUT_KEYBOARD;
