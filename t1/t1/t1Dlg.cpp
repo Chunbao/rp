@@ -62,6 +62,7 @@ const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
 
 const cv::Point PRICE_INPUT(792 + 55/*right side of input*/, 491);
+const cv::Point CAPTCHA_INPUT(670, 495);
 const cv::Point PRICE_CONFIRM(910, 492);
 
 const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
@@ -502,9 +503,13 @@ void Ct1Dlg::automateWorkFlow() {
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                    ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
+                    //click back to input
                 }
-
                 time(&m_timer);
+                /* need to optimize since this captcha too often cases, 
+                   a flag to skip time-comsuing cal.
+                 */ 
             }
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
