@@ -6,3 +6,4 @@ todo
 3. Dialog frame size
 4. OCR small character, use image enhance
 5. wf optimize
+-. print a GUI picture and mark the place that need coordinates
