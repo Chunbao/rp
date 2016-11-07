@@ -201,10 +201,12 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDHtmlDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
-	DDX_Control(pDX, IDC_EDIT1, editorMy);
-	DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
+    CDHtmlDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+    DDX_Control(pDX, IDC_EDIT1, editorMy);
+    DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
+    DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
+    DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -264,6 +266,31 @@ BOOL Ct1Dlg::OnInitDialog()
 */
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
+
+    m_confirmPriceSeconds.AddString("43s");
+    m_confirmPriceSeconds.AddString("44s");
+    m_confirmPriceSeconds.AddString("45s");
+    m_confirmPriceSeconds.AddString("46s");
+    m_confirmPriceSeconds.AddString("47s");
+    m_confirmPriceSeconds.AddString("48s");
+    m_confirmPriceSeconds.AddString("49s");
+    m_confirmPriceSeconds.AddString("50s");
+    m_confirmPriceSeconds.SetCurSel(2);
+
+    m_confirmPriceAdd.AddString("400");
+    m_confirmPriceAdd.AddString("500");
+    m_confirmPriceAdd.AddString("600");
+    m_confirmPriceAdd.AddString("700");
+    m_confirmPriceAdd.AddString("800");
+    m_confirmPriceAdd.AddString("900");
+    m_confirmPriceAdd.AddString("1000");
+    m_confirmPriceAdd.AddString("1100");
+    m_confirmPriceAdd.AddString("1200");
+    m_confirmPriceAdd.SetCurSel(6);
+
+    //int nIndex = m_cbExample.GetCurSel();
+    //CString strCBText;
+    //m_cbExample.GetLBText(nIndex, strCBText);
 
     //@todo, read local file to check if it is registered
 	editorMy.SetWindowTextA("Hello world...");
@@ -622,7 +649,7 @@ std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int r
 }
 
 
-//Very time consuming, 1.2 seconds used on debug core 2 notebook
+//Very time consuming, 1.2 seconds uses
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
     cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);

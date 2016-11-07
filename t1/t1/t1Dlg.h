@@ -92,4 +92,11 @@ private:
     };
 
     STATE_MACHINE m_stateMachine;
+
+
+public:
+    // // in which seconds the price is fixed
+    CComboBox m_confirmPriceSeconds;
+    // How much extra money to add based on you time
+    CComboBox m_confirmPriceAdd;
 };
