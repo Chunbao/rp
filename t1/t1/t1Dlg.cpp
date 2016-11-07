@@ -37,21 +37,24 @@
 //using namespace cv;
 
 //price
-const int RELATIVE_LEFT = 750;
-const int RELATIVE_TOP = 335;
-const int RELATIVE_RIGHT = 809;
-const int RELATIVE_BOTTOM = 357;
+const int RELATIVE_LEFT = 662;
+const int RELATIVE_TOP = 323;
+const int RELATIVE_RIGHT = 720;
+const int RELATIVE_BOTTOM = 345;
 //backup price
-//const int RELATIVE_LEFT = 267;
-//const int RELATIVE_TOP = 480;
-//const int RELATIVE_RIGHT = 314;
-//const int RELATIVE_BOTTOM = 495;
+//const int RELATIVE_LEFT = 178;
+//const int RELATIVE_TOP = 469;
+//const int RELATIVE_RIGHT = 226;
+//const int RELATIVE_BOTTOM = 487;
 
 const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1s
-const cv::Point VALID_BUTTON_AREA_LEFT(552, 305);
-const cv::Point VALID_BUTTON_AREA_RIGHT(987, 605);
+const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
+const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 
+const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
+const cv::Point PRICE_CONFIRM(824, 482);
+const cv::Point CAPTCHA_INPUT(818, 478);
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -60,10 +63,6 @@ const cv::Point VALID_BUTTON_AREA_RIGHT(987, 605);
 // @todo, retrived from this function -> GetSystemMetrics
 const int DIALOG_FRAME_LEFT_WIDTH = 8;
 const int DIALOG_FRAME_TOP_HEIGHT = 30;
-
-const cv::Point PRICE_INPUT(792 + 55/*right side of input*/, 491);
-const cv::Point CAPTCHA_INPUT(670, 495);
-const cv::Point PRICE_CONFIRM(910, 492);
 
 const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
 const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
@@ -476,7 +475,7 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_timer);
-            if (seconds > INPUT_PRICE_DELAY)
+            if (seconds >= INPUT_PRICE_DELAY)
             {
                 //@todo, happy flow case
                 RECT rect;
@@ -494,7 +493,7 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_timer);
-            if (seconds > INPUT_PRICE_DELAY)
+            if (seconds >= INPUT_PRICE_DELAY)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
@@ -526,7 +525,7 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_timer);
-            if (seconds > INPUT_PRICE_DELAY)
+            if (seconds >= INPUT_PRICE_DELAY)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
