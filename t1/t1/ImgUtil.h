@@ -60,9 +60,9 @@ namespace ipt {
 
 namespace utl
 {
-    inline bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight)
-    {
-        return (target.x > validLeft.x && target.x < validRight.x)
-            && (target.y > validLeft.y && target.y < validRight.y);
-    }
+    bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight);
+
+    int getBorderAreaWidth(HDC h1);
+
+    int getCaptionAreaHeight(HDC h1);
 }

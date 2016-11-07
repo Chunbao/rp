@@ -48,7 +48,7 @@ const int RELATIVE_BOTTOM = 345;
 //const int RELATIVE_BOTTOM = 487;
 
 const int PREDICT_ADD_PRICE = 300;
-const int INPUT_PRICE_DELAY = 1; //1s
+const int INPUT_PRICE_DELAY = 1; //1 second
 const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
 const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 
@@ -58,11 +58,10 @@ const cv::Point CAPTCHA_INPUT(818, 478);
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
-
-// @todo, fix offset caused by dialog title and frame area (width=8,height=30)
-// @todo, retrived from this function -> GetSystemMetrics
-const int DIALOG_FRAME_LEFT_WIDTH = 8;
-const int DIALOG_FRAME_TOP_HEIGHT = 30;
+// fix offset caused by dialog title and frame area (width=8,height=30)
+// initialized in OnInitDialog
+static int DIALOG_FRAME_LEFT_WIDTH;
+static int DIALOG_FRAME_TOP_HEIGHT;
 
 const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
 const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
@@ -263,6 +262,9 @@ BOOL Ct1Dlg::OnInitDialog()
     CString strURL("www.microsoft.com");
     m_pBrowserMy.Navigate(strURL, &noArg, &noArg, &noArg, &noArg);
 */
+    DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
+    DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
+
     //@todo, read local file to check if it is registered
 	editorMy.SetWindowTextA("Hello world...");
     
@@ -350,6 +352,7 @@ void Ct1Dlg::OnBnClickedButtonRefresh()
     m_pBrowserMy.Refresh();
 }
 
+
 BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 {
     // RT display info.
@@ -422,6 +425,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F6)
         {
+            utl::getCaptionAreaHeight(GetDC()->m_hDC);
             if (m_stateMachine != STATE_NONE)
             {
                 RECT rect;
@@ -617,6 +621,8 @@ std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int r
     return std::string("");
 }
 
+
+//Very time consuming, 1.2 seconds used on debug core 2 notebook
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
     cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);

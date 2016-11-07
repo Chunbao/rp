@@ -285,3 +285,33 @@ namespace ipt { // Virtual input of mouse of keyboard
     }
 
 }
+
+
+namespace utl
+{
+    bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight)
+    {
+        return (target.x > validLeft.x && target.x < validRight.x)
+            && (target.y > validLeft.y && target.y < validRight.y);
+    }
+
+    int getBorderAreaWidth(HDC h1)
+    {
+        RECT rectWindow;
+        GetWindowRect(WindowFromDC(h1), &rectWindow);
+        RECT rectClient;
+        GetClientRect(WindowFromDC(h1), &rectClient);
+
+        return ((rectWindow.right - rectWindow.left) - (rectClient.right-rectClient.left))/2;
+    }
+
+    int getCaptionAreaHeight(HDC h1)
+    {
+        RECT rectWindow;
+        GetWindowRect(WindowFromDC(h1), &rectWindow);
+        RECT rectClient;
+        GetClientRect(WindowFromDC(h1), &rectClient);
+
+        return (rectWindow.bottom - rectWindow.top) - (rectClient.bottom - rectClient.top) - getBorderAreaWidth(h1);
+    }
+}
