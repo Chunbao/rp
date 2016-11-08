@@ -18,6 +18,8 @@ todo
 
 -. print a GUI picture and mark the place that need coordinates
 -. screen auto capture tool, use video record on site.
+-. load png file to memory
 
+http://stackoverflow.com/questions/22947929/how-to-convert-a-bitmap-to-pix-in-memory
 
 
