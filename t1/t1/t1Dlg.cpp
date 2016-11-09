@@ -42,10 +42,10 @@ const int RELATIVE_TOP = 323;
 const int RELATIVE_RIGHT = 720;
 const int RELATIVE_BOTTOM = 345;
 //backup price
-//const int RELATIVE_LEFT = 178;
-//const int RELATIVE_TOP = 469;
-//const int RELATIVE_RIGHT = 226;
-//const int RELATIVE_BOTTOM = 487;
+const int RELATIVE_LEFT_SMALL = 178;
+const int RELATIVE_TOP_SMALL = 469;
+const int RELATIVE_RIGHT_SMALL = 226;
+const int RELATIVE_BOTTOM_SMALL = 487;
 
 const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1 second
@@ -442,12 +442,24 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F4)
         {
+            img::writePriceToFile(GetDC()->m_hDC, 
+                                  RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH, 
+                                  RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
+                                  RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL, 
+                                  RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
+                                  "UI.bmp");
+            img::enhanceImage("UI.bmp", "out.bmp");
+            std::string price = captureEnhancedText("out.bmp");
+
             //display result
             char coordinates[60];
-            sprintf(coordinates, "%d, %d, %d, %d, %s", RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM,
-                captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str());
+            sprintf(coordinates, "%d, %d, %d, %d, %s, %s", 
+                RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM,
+                captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
+                price.c_str());
             editorMy.SetWindowTextA(coordinates);
 
+            
             //captureEnhancedText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM);
         }
         else if (pMsg->wParam == VK_F6)
@@ -614,38 +626,22 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 	return std::string(utf8_text_ptr);
 }
 
-std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
+std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
 {
-    HDC hdc = GetDC()->m_hDC;
-    HBITMAP bitmap = img::GetSrcBit(hdc, 
-        relativeLeft - DIALOG_FRAME_LEFT_WIDTH,
-        relativeTop - DIALOG_FRAME_TOP_HEIGHT, 
-        relativeRight - relativeLeft, 
-        relativeBottom - relativeTop);
+    tesseract::TessBaseAPI tesseract_ptr;
+    tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
+    tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
+    tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
+    tesseract_ptr.SetVariable("tessedit_char_blacklist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
+    //tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
 
-    //IplImage* source = img::hBitmap2Ipl(bitmap);
-    //
-    //// declare a destination IplImage object with correct size, depth and channels
-    //IplImage *destination = cvCreateImage(
-    //    cvSize((int)((source->width*TIMES_IMAGE_ENHANCEMENT) / 100), 
-    //        (int)((source->height*TIMES_IMAGE_ENHANCEMENT) / 100)),
-    //    source->depth, 
-    //    source->nChannels);
 
-    ////use cvResize to resize source to a destination image
-    //cvResize(source, destination);
-
-    //HBITMAP targetBitmap = img::IplImage2hBitmap(destination);
-
-    // save bitmap to clipboard
-    OpenClipboard();
-    EmptyClipboard();
-    SetClipboardData(CF_BITMAP, bitmap);
-    CloseClipboard();
-
-    ReleaseDC(GetDC());
-
-    return std::string("");
+    STRING text_out;
+    tesseract_ptr.ProcessPages(enhancedFile.c_str(), NULL, 0, &text_out);
+                                                                                                                                 //std::unique_ptr<char[]> utf8_text_ptr(tesseract_ptr->GetUTF8Text());
+    char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
+    return std::string(utf8_text_ptr);
 }
 
 

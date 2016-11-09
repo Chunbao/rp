@@ -61,7 +61,7 @@ private:
     void automateWorkFlow();
 
     std::string captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
-    std::string Ct1Dlg::captureEnhancedText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
+    std::string captureEnhancedText(std::string enhancedFile);
 
     cv::Point captureTemplate(const std::string& templ);
 

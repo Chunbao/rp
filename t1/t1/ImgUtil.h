@@ -39,6 +39,11 @@ namespace img
         inline int GetHeight() const { return this->height; }
         inline const std::uint8_t* GetPixels() { return this->Pixels.data(); }
     };
+
+
+    void writePriceToFile(HDC hdcWindow, int x, int y, int width, int height, std::string ui);
+
+    int enhanceImage(std::string inFile, std::string outFile);
 }
 
 
