@@ -41,20 +41,27 @@ const int RELATIVE_LEFT = 662;
 const int RELATIVE_TOP = 323;
 const int RELATIVE_RIGHT = 720;
 const int RELATIVE_BOTTOM = 345;
-//backup price
+//small price area
 const int RELATIVE_LEFT_SMALL = 178;
 const int RELATIVE_TOP_SMALL = 469;
 const int RELATIVE_RIGHT_SMALL = 226;
 const int RELATIVE_BOTTOM_SMALL = 487;
+//time area
+const int RELATIVE_LEFT_TIME = 149;
+const int RELATIVE_TOP_TIME = 455;
+const int RELATIVE_RIGHT_TIME = 222;
+const int RELATIVE_BOTTOM_TIME = 469;
 
-const int PREDICT_ADD_PRICE = 300;
-const int INPUT_PRICE_DELAY = 1; //1 second
-const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
-const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 
 const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
 const cv::Point PRICE_CONFIRM(824, 482);
+
+const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
+const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 const cv::Point CAPTCHA_INPUT(818, 478);
+
+const int PREDICT_ADD_PRICE = 300;
+const int INPUT_PRICE_DELAY = 1; //1 second
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -67,13 +74,14 @@ const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\
 const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
 const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
 const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+
+const std::string ENHANCED_AREA_BEFORE("UI.bmp");
+const std::string ENHANCED_AREA_AFTER("out.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
 //const std::string BUTTON_OK_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\ok.png");
 //const std::string BUTTON_CANCEL_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\cancel.png");
 //const std::string DIALOG_CAPTURE_TMP("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\Capture_tmp.jpg");
-
-const int TIMES_IMAGE_ENHANCEMENT = 3;
 
 
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
@@ -436,6 +444,19 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //@todo, check state
             //m_pBrowserMy.GoBack();
         }
+        else if (pMsg->wParam == VK_F3)
+        {
+            img::writePriceToFile(GetDC()->m_hDC,
+                RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
+                RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
+                RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
+                RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
+                ENHANCED_AREA_BEFORE);
+            img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+            std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
+
+            // ... @todo
+        }
         else if (pMsg->wParam == VK_F5)
         {
             m_pBrowserMy.Refresh();
@@ -447,16 +468,14 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                                   RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
                                   RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL, 
                                   RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
-                                  "UI.bmp");
-            img::enhanceImage("UI.bmp", "out.bmp");
-            std::string price = captureEnhancedText("out.bmp");
+                                  ENHANCED_AREA_BEFORE);
+            img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+            std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
 
             //display result
             char coordinates[60];
-            sprintf(coordinates, "%d, %d, %d, %d, %s, %s", 
-                RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM,
-                captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
-                price.c_str());
+            sprintf(coordinates, "%s, %s", captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
+                                           price.c_str());
             editorMy.SetWindowTextA(coordinates);
 
             

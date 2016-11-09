@@ -82,6 +82,9 @@ private:
 
     time_t m_timer;
 
+    // in seconds, +1 if server is 1 second faster than local
+    int m_timeDiff;
+
     enum STATE_MACHINE
     {
         STATE_NONE,
