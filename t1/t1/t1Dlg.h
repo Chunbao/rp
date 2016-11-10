@@ -78,9 +78,13 @@ private:
 	// display information pannel
 	CEdit infoPanelEditor;
 
-    int m_bidPrice;
+    time_t m_workFlowTimer;
 
-    time_t m_timer;
+    int m_bidPrice;
+    time_t m_priceTimer;
+
+    // flag to remember input start, use enum 3 states if necessary
+    bool inputFinish;
 
     // in seconds, +1 if server is 1 second faster than local
     int m_timeDiff;
@@ -93,11 +97,10 @@ private:
         STATE_PRICE_SEND,
         STATE_PRICE_RESULT
     };
-
     STATE_MACHINE m_stateMachine;
 
 
-public:
+
     // // in which seconds the price is fixed
     CComboBox m_confirmPriceSeconds;
     // How much extra money to add based on you time

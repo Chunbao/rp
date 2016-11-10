@@ -31,7 +31,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2\imgproc\imgproc_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 //using namespace std;
 //using namespace cv;
@@ -70,19 +70,19 @@ const int INPUT_PRICE_DELAY = 1; //1 second
 static int DIALOG_FRAME_LEFT_WIDTH;
 static int DIALOG_FRAME_TOP_HEIGHT;
 
-const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
-const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
-const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
-const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
 
 const std::string ENHANCED_AREA_BEFORE("UI.bmp");
 const std::string ENHANCED_AREA_AFTER("out.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
-//const std::string BUTTON_OK_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\ok.png");
-//const std::string BUTTON_CANCEL_FILE("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\cancel.png");
-//const std::string DIALOG_CAPTURE_TMP("D:\\workspace\\test\\bmatch\\文件夹\\GUIXX\\Capture_tmp.jpg");
-
+const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
+const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
+const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
+const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+//const std::string     BUTTON_OK_FILE(".\\ok.bmp");
+//const std::string BUTTON_CANCEL_FILE(".\\cancel.bmp");
+//const std::string BUTTON_REFRESH_FILE(".\\refresh.bmp");
+//const std::string DIALOG_CAPTURE_TMP(".\\Capture_tmp.bmp");
 
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
 {
@@ -483,7 +483,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F6)
         {
-            utl::getCaptionAreaHeight(GetDC()->m_hDC);
+            //utl::getCaptionAreaHeight(GetDC()->m_hDC);
             if (m_stateMachine != STATE_NONE)
             {
                 RECT rect;
@@ -510,7 +510,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             ipt::keyboardSendUnicodeInput(predicatePrice);
 
             m_stateMachine = STATE_PRICE_INPUT;
-            time(&m_timer);
+            time(&m_workFlowTimer);
             return true;
         }
         else if (pMsg->wParam == VK_RETURN)
@@ -519,7 +519,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //m_pBrowserMy.Refresh();
             if (m_stateMachine == STATE_PRICE_CONFIRM)
             {
-                time(&m_timer);
+                time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
             }
         }
@@ -536,14 +536,14 @@ void Ct1Dlg::automateWorkFlow() {
         {
             time_t now;
             time(&now);
-            double seconds = difftime(now, m_timer);
+            double seconds = difftime(now, m_workFlowTimer);
             if (seconds >= INPUT_PRICE_DELAY)
             {
                 //@todo, happy flow case
                 RECT rect;
                 GetWindowRect(&rect);
                 ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
-                time(&m_timer);
+                time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_CONFIRM;
             }
         }
@@ -554,7 +554,7 @@ void Ct1Dlg::automateWorkFlow() {
             // should never appear, promised by deleting
             time_t now;
             time(&now);
-            double seconds = difftime(now, m_timer);
+            double seconds = difftime(now, m_workFlowTimer);
             if (seconds >= INPUT_PRICE_DELAY)
             {
                 //precise match OK button, to make sure no dialog
@@ -567,7 +567,7 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
                     //click back to input
                 }
-                time(&m_timer);
+                time(&m_workFlowTimer);
                 /* need to optimize since this captcha too often cases, 
                    a flag to skip time-comsuing cal.
                  */ 
@@ -579,14 +579,14 @@ void Ct1Dlg::automateWorkFlow() {
             GetWindowRect(&rect);
             cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
             ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
-            time(&m_timer);
+            time(&m_workFlowTimer);
             m_stateMachine = STATE_PRICE_RESULT;
         }
         else if (m_stateMachine == STATE_PRICE_RESULT)
         {
             time_t now;
             time(&now);
-            double seconds = difftime(now, m_timer);
+            double seconds = difftime(now, m_workFlowTimer);
             if (seconds >= INPUT_PRICE_DELAY)
             {
                 //precise match OK button, to make sure no dialog
@@ -598,7 +598,7 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
                 }
-                time(&m_timer);
+                time(&m_workFlowTimer);
             }
         }
     }
