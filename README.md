@@ -22,4 +22,4 @@ todo
 
 http://stackoverflow.com/questions/22947929/how-to-convert-a-bitmap-to-pix-in-memory
 
-
+http://stackoverflow.com/questions/37205992/convert-a-windows-bitmap-to-a-pix-unsigned-char-buffer/37209796
