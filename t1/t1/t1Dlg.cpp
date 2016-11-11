@@ -84,6 +84,10 @@ const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\
 //const std::string BUTTON_REFRESH_FILE(".\\refresh.bmp");
 //const std::string DIALOG_CAPTURE_TMP(".\\Capture_tmp.bmp");
 
+
+// CWnd::BringWindowToTop
+
+
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
 {
 	int x1, y1, x2, y2, w, h;
@@ -275,25 +279,25 @@ BOOL Ct1Dlg::OnInitDialog()
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 
-    m_confirmPriceSeconds.AddString("43s");
-    m_confirmPriceSeconds.AddString("44s");
-    m_confirmPriceSeconds.AddString("45s");
-    m_confirmPriceSeconds.AddString("46s");
-    m_confirmPriceSeconds.AddString("47s");
-    m_confirmPriceSeconds.AddString("48s");
-    m_confirmPriceSeconds.AddString("49s");
-    m_confirmPriceSeconds.AddString("50s");
+    m_confirmPriceSeconds.AddString(_T("43s"));
+    m_confirmPriceSeconds.AddString(_T("44s"));
+    m_confirmPriceSeconds.AddString(_T("45s"));
+    m_confirmPriceSeconds.AddString(_T("46s"));
+    m_confirmPriceSeconds.AddString(_T("47s"));
+    m_confirmPriceSeconds.AddString(_T("48s"));
+    m_confirmPriceSeconds.AddString(_T("49s"));
+    m_confirmPriceSeconds.AddString(_T("50s"));
     m_confirmPriceSeconds.SetCurSel(2);
 
-    m_confirmPriceAdd.AddString("400");
-    m_confirmPriceAdd.AddString("500");
-    m_confirmPriceAdd.AddString("600");
-    m_confirmPriceAdd.AddString("700");
-    m_confirmPriceAdd.AddString("800");
-    m_confirmPriceAdd.AddString("900");
-    m_confirmPriceAdd.AddString("1000");
-    m_confirmPriceAdd.AddString("1100");
-    m_confirmPriceAdd.AddString("1200");
+    m_confirmPriceAdd.AddString(_T("400"));
+    m_confirmPriceAdd.AddString(_T("500"));
+    m_confirmPriceAdd.AddString(_T("600"));
+    m_confirmPriceAdd.AddString(_T("700"));
+    m_confirmPriceAdd.AddString(_T("800"));
+    m_confirmPriceAdd.AddString(_T("900"));
+    m_confirmPriceAdd.AddString(_T("1000"));
+    m_confirmPriceAdd.AddString(_T("1100"));
+    m_confirmPriceAdd.AddString(_T("1200"));
     m_confirmPriceAdd.SetCurSel(6);
 
     //int nIndex = m_cbExample.GetCurSel();
@@ -301,7 +305,7 @@ BOOL Ct1Dlg::OnInitDialog()
     //m_cbExample.GetLBText(nIndex, strCBText);
 
     //@todo, read local file to check if it is registered
-	editorMy.SetWindowTextA("Hello world...");
+	editorMy.SetWindowText(_T("Hello world..."));
     
     //CString strURL("http://www.baidu.com");
 	CString strURL("http://moni.51hupai.org/");
@@ -394,17 +398,19 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
     {
         SYSTEMTIME sys_time;
         GetLocalTime(&sys_time);
-        char systemTime[150];
-        sprintf(systemTime, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d\n", 
-            sys_time.wYear,
-            sys_time.wMonth,
-            sys_time.wDay,
-            sys_time.wHour,
-            sys_time.wMinute,
-            sys_time.wSecond,
-            sys_time.wMilliseconds,
-            sys_time.wDayOfWeek,
-            m_bidPrice);
+
+        //char systemTime[150];
+        CString systemTime;
+        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d\n"),
+                            sys_time.wYear,
+                            sys_time.wMonth,
+                            sys_time.wDay,
+                            sys_time.wHour,
+                            sys_time.wMinute,
+                            sys_time.wSecond,
+                            sys_time.wMilliseconds,
+                            sys_time.wDayOfWeek,
+                            m_bidPrice);
         SetWindowText(systemTime);
         //editorMy.SetWindowTextA(systemTime);
         //system("time");
@@ -414,9 +420,9 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - rect.left;
         LONG RELATIVE_VERTICAL_DISTANCE = pMsg->pt.y - rect.top;
 
-        char coordinates[30];
-        sprintf(coordinates, "%d, %d", RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
-        infoPanelEditor.SetWindowTextA(coordinates);
+        CString coordinates;
+        coordinates.Format(_T("%d, %d"), RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
+        infoPanelEditor.SetWindowText(coordinates);
     }
 
     if (manageUserEvent(pMsg))
@@ -473,10 +479,11 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
 
             //display result
-            char coordinates[60];
-            sprintf(coordinates, "%s, %s", captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
-                                           price.c_str());
-            editorMy.SetWindowTextA(coordinates);
+            CString coordinates;
+            coordinates.Format(_T("%s, %s"), 
+                               captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
+                               price.c_str());
+            editorMy.SetWindowText(coordinates);
 
             
             //captureEnhancedText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM);

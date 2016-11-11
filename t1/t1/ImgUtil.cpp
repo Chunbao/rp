@@ -244,7 +244,7 @@ namespace img
             (BITMAPINFO *)&bi, DIB_RGB_COLORS);
 
         // A file is created, this is where we will save the screen capture.
-        HANDLE hFile = CreateFile(ui.c_str(),
+        HANDLE hFile = CreateFile(CString(ui.c_str()),
             GENERIC_WRITE,
             0,
             NULL,
