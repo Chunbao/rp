@@ -60,8 +60,9 @@ const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
 const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 const cv::Point CAPTCHA_INPUT(818, 478);
 
-const int PREDICT_ADD_PRICE = 300;
+//const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1 second
+const int PERFORM_SEND_PRICE_POINT = 300;
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -208,8 +209,10 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 	: CDHtmlDialog(Ct1Dlg::IDD, Ct1Dlg::IDH, pParent)
     , m_stateMachine(STATE_NONE)
     , m_bidPrice(0)
+    , m_bidUserFinalPrice(0)
     , m_isInUserInputStage(false)
     , m_priceTimer(std::chrono::high_resolution_clock::now())
+    , m_okPositionWhenSending(0 , 0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -290,7 +293,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceSeconds.AddString(_T("48s"));
     m_confirmPriceSeconds.AddString(_T("49s"));
     m_confirmPriceSeconds.AddString(_T("50s"));
-    m_confirmPriceSeconds.SetCurSel(2);
+    m_confirmPriceSeconds.SetCurSel(4);
 
     m_confirmPriceAdd.AddString(_T("400"));
     m_confirmPriceAdd.AddString(_T("500"));
@@ -301,7 +304,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1000"));
     m_confirmPriceAdd.AddString(_T("1100"));
     m_confirmPriceAdd.AddString(_T("1200"));
-    m_confirmPriceAdd.SetCurSel(6);
+    m_confirmPriceAdd.SetCurSel(4);
 
     //int nIndex = m_cbExample.GetCurSel();
     //CString strCBText;
@@ -404,7 +407,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
         //char systemTime[150];
         CString systemTime;
-        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d\n"),
+        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d\n"),
                             sys_time.wYear,
                             sys_time.wMonth,
                             sys_time.wDay,
@@ -413,7 +416,9 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
                             sys_time.wSecond,
                             sys_time.wMilliseconds,
                             sys_time.wDayOfWeek,
-                            m_bidPrice);
+                            m_bidPrice,
+                            m_bidUserFinalPrice - m_bidPrice - 300,
+                            (int)m_stateMachine);
         SetWindowText(systemTime);
         //editorMy.SetWindowTextA(systemTime);
         //system("time");
@@ -449,14 +454,22 @@ void Ct1Dlg::performPriceRecognition()
         std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
     if (elapsed.count() >= 200)
     {
-        img::writePriceToFile(GetDC()->m_hDC,
-            RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH,
-            RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
-            RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL,
-            RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
-            ENHANCED_AREA_BEFORE);
-        img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
-        std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
+        std::string price;
+        if (m_stateMachine != STATE_NONE)
+        {
+            img::writePriceToFile(GetDC()->m_hDC,
+                RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH,
+                RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
+                RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL,
+                RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
+                ENHANCED_AREA_BEFORE);
+            img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+            price = captureEnhancedText(ENHANCED_AREA_AFTER);
+        }
+        else
+        {
+            price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM);
+        }
         m_bidPrice = PriceOCRFilter.process(price);
 
         CString coordinates;
@@ -541,6 +554,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             GetWindowRect(&rect);
             ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
             ipt::keyboardSendBackspaceKey(7);
+            /*
             std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
             if (price.empty())
             {
@@ -548,7 +562,13 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             }
 
             m_bidPrice = std::stoi(price);
-            std::string predicatePrice = std::to_string(m_bidPrice + PREDICT_ADD_PRICE);
+            */
+            int nIndex = m_confirmPriceAdd.GetCurSel();
+            CString strCBText;
+            m_confirmPriceAdd.GetLBText(nIndex, strCBText);
+            m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
+
+            std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
             ipt::keyboardSendUnicodeInput(predicatePrice);
 
             m_stateMachine = STATE_PRICE_INPUT;
@@ -561,9 +581,28 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //m_pBrowserMy.Refresh();
             if (m_stateMachine == STATE_PRICE_CONFIRM)
             {
+                if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
+                {
+                    cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
+                    if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                    {
+                        cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                        if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                        {
+                            m_okPositionWhenSending.x = capturedPosition.x;
+                            m_okPositionWhenSending.y = capturedPosition.y;
+                        }
+                    }
+                }
+
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
             }
+        }
+        else if (pMsg->wParam == VK_ESCAPE)
+        {
+            //Find any cancel click, or find ok to click
+            return true;
         }
     }
 
@@ -597,14 +636,15 @@ void Ct1Dlg::automateWorkFlow() {
             //@todo, refresh if captcha appears
             // need precise match
             // should never appear, promised by deleting
+            RECT rect;
+            GetWindowRect(&rect);
+
             time_t now;
             time(&now);
             double seconds = difftime(now, m_workFlowTimer);
             if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
             {
                 //precise match OK button, to make sure no dialog
-                RECT rect;
-                GetWindowRect(&rect);
                 cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
@@ -612,21 +652,38 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
                     //click back to input
                 }
+                else
+                {
+                    /* need to optimize since this captcha too often cases,
+                    a flag to skip time-comsuing cal.
+                    */
+                }
                 time(&m_workFlowTimer);
-                m_isInUserInputStage = false;
-                /* need to optimize since this captcha too often cases, 
-                   a flag to skip time-comsuing cal.
-                 */ 
+                m_isInUserInputStage = false; 
             }
+
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
-            RECT rect;
-            GetWindowRect(&rect);
-            cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-            ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
-            time(&m_workFlowTimer);
-            m_stateMachine = STATE_PRICE_RESULT;
+            if (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT
+                /* @todo, or time out*/)
+            {
+                RECT rect;
+                GetWindowRect(&rect);
+                if (m_okPositionWhenSending.x != 0 && m_okPositionWhenSending.y != 0)
+                {
+                    ipt::leftButtonClick(rect.left + m_okPositionWhenSending.x, rect.top + m_okPositionWhenSending.y);
+                }
+                else
+                {
+                    // ideally, should never arrived here
+                    assert(false);
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                    ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                }
+                time(&m_workFlowTimer);
+                m_stateMachine = STATE_PRICE_RESULT;
+            }
         }
         else if (m_stateMachine == STATE_PRICE_RESULT)
         {

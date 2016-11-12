@@ -82,7 +82,9 @@ private:
 
     time_t m_workFlowTimer;
 
-    int m_bidPrice;
+    cv::Point m_okPositionWhenSending;
+    int m_bidUserFinalPrice; // user set
+    int m_bidPrice; // realtime
     std::chrono::high_resolution_clock::time_point m_priceTimer;
 
     // flag to remember input start, use enum 3 states if necessary
