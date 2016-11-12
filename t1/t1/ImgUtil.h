@@ -70,4 +70,20 @@ namespace utl
     int getBorderAreaWidth(HDC h1);
 
     int getCaptionAreaHeight(HDC h1);
+
+    /*
+      Using the output of OCR, this class manipulate the price, and make it reasonable
+      price according to the actual market price. Since  the output of OCR could be wrong.
+      Currently, it can recoginized all digits except 7*/
+    class PriceFilter
+    {
+    public:
+        PriceFilter();
+        void reset();
+        int process(std::string price);
+
+    private:
+        std::vector<std::pair<std::string, int>> m_data;
+        const int MAX_CACHE;
+    };
 }

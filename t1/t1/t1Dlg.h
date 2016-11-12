@@ -9,7 +9,7 @@
 
 #include <opencv2\core\core.hpp>
 #include <string>
-
+#include <chrono>
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 //https://msdn.microsoft.com/en-us/library/aa752046(v=vs.85).aspx
@@ -65,6 +65,8 @@ private:
 
     cv::Point captureTemplate(const std::string& templ);
 
+    void performPriceRecognition();
+
 public:
 
     afx_msg void OnBnClickedButtonRefresh();
@@ -81,10 +83,13 @@ private:
     time_t m_workFlowTimer;
 
     int m_bidPrice;
-    time_t m_priceTimer;
+    std::chrono::high_resolution_clock::time_point m_priceTimer;
 
     // flag to remember input start, use enum 3 states if necessary
-    bool inputFinish;
+    //bool inputFinish;
+
+    //flag to stop captureTemplate from executing
+    bool m_isInUserInputStage;
 
     // in seconds, +1 if server is 1 second faster than local
     int m_timeDiff;

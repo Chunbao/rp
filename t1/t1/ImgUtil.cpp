@@ -972,4 +972,117 @@ namespace utl
 
         return (rectWindow.bottom - rectWindow.top) - (rectClient.bottom - rectClient.top) - getBorderAreaWidth(h1);
     }
+
+
+    // PriceFilter
+    PriceFilter::PriceFilter() : MAX_CACHE(100)
+    {}
+
+    void PriceFilter::reset()
+    {
+        m_data.clear();
+    }
+
+    int PriceFilter::process(std::string price)
+    {
+        const std::string originalPrice = price;
+
+        price.erase(price.find_last_not_of(" \n") + 1);
+
+        int ret(0);
+        if (m_data.size() >= MAX_CACHE)
+        {
+            m_data.erase(m_data.begin());
+        }
+
+        if (price.size() == 5) // The number of digits,e.g. 86500
+        {
+            if (price.at(0) == '8' &&
+                price.at(3) == '0' &&
+                price.at(4) == '0')
+            {
+                if (std::stoi(price) / 10000 == 0)
+                {
+                    if (' ' == price.at(1))
+                    {
+                        price.replace(1, 1, "7");
+                    }
+                    if (' ' == price.at(2))
+                    {
+                        price.replace(2, 1, "7");
+                    }
+                }
+                if (std::stoi(price) / 10000 != 0)
+                {
+                    ret = std::stoi(price);
+                }
+            }
+            //return previous
+        }
+        else if (price.size() == 6)
+        {
+            if (price.at(0) == '8' &&
+                price.at(4) == '0' &&
+                price.at(5) == '0')
+            {
+                if (' ' == price.at(1))
+                {
+                    price.replace(1, 2, "7");
+                    if (' ' == price.at(2))
+                    {
+                        price.replace(2, 1, "7");
+                    }
+                }
+                else if (' ' == price.at(2))
+                {
+                    price.replace(2, 2, "7");
+                }
+
+                if (std::stoi(price) / 10000 != 0)
+                {
+                    ret = std::stoi(price);
+                }
+            }
+        }
+
+
+        if (ret == 0)
+        {
+            if (m_data.size() > 0)
+            {
+                //if the same
+                if (originalPrice == m_data.at(m_data.size() - 1).first)
+                {
+                    ret = m_data.at(m_data.size() - 1).second;
+                }
+                else
+                {
+                    ret = m_data.at(m_data.size() - 1).second + 100;
+                }
+            }
+        }
+        else if (ret < 82000)
+        {
+            ret = 82000; //
+        }
+        else if (ret >= 82000)
+        {
+            if (m_data.size() > 0 && ret > 99000 )
+            {
+                if (originalPrice == m_data.at(m_data.size() - 1).first)
+                {
+                    ret = m_data.at(m_data.size() - 1).second;
+                }
+                else
+                {
+                    ret = m_data.at(m_data.size() - 1).second + 100;
+                }
+            }
+        }
+
+        m_data.push_back(std::pair<std::string, int>(originalPrice, ret));
+
+        return ret;
+    }
+
 }

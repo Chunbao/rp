@@ -69,10 +69,11 @@ const int INPUT_PRICE_DELAY = 1; //1 second
 // initialized in OnInitDialog
 static int DIALOG_FRAME_LEFT_WIDTH;
 static int DIALOG_FRAME_TOP_HEIGHT;
+static utl::PriceFilter PriceOCRFilter;
 
 
-const std::string ENHANCED_AREA_BEFORE("UI.bmp");
-const std::string ENHANCED_AREA_AFTER("out.bmp");
+const std::string ENHANCED_AREA_BEFORE("TmpPriceClip.bmp");
+const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
 const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
@@ -207,6 +208,8 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 	: CDHtmlDialog(Ct1Dlg::IDD, Ct1Dlg::IDH, pParent)
     , m_stateMachine(STATE_NONE)
     , m_bidPrice(0)
+    , m_isInUserInputStage(false)
+    , m_priceTimer(std::chrono::high_resolution_clock::now())
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -425,6 +428,8 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         infoPanelEditor.SetWindowText(coordinates);
     }
 
+    performPriceRecognition();
+
     if (manageUserEvent(pMsg))
     {
         return true;
@@ -433,6 +438,36 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
     automateWorkFlow();
 
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+
+void Ct1Dlg::performPriceRecognition()
+{
+    std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+    //double seconds = difftime(now, m_priceTimer);
+    std::chrono::milliseconds elapsed =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
+    if (elapsed.count() >= 200)
+    {
+        img::writePriceToFile(GetDC()->m_hDC,
+            RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH,
+            RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
+            RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL,
+            RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
+            ENHANCED_AREA_BEFORE);
+        img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+        std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
+        m_bidPrice = PriceOCRFilter.process(price);
+
+        CString coordinates;
+        coordinates.Format(_T("%s, %d, %d"),
+            CString(price.c_str()),
+            m_bidPrice,
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now).count());
+        editorMy.SetWindowText(coordinates);
+
+        m_priceTimer = std::chrono::high_resolution_clock::now();
+    }
 }
 
 bool Ct1Dlg::manageUserEvent(MSG* pMsg)
@@ -481,8 +516,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //display result
             CString coordinates;
             coordinates.Format(_T("%s, %s"), 
-                               captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str(),
-                               price.c_str());
+                               CString(captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str()),
+                               CString(price.c_str()));
             editorMy.SetWindowText(coordinates);
 
             
@@ -544,13 +579,16 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_workFlowTimer);
-            if (seconds >= INPUT_PRICE_DELAY)
+            if (seconds > INPUT_PRICE_DELAY)
             {
                 //@todo, happy flow case
                 RECT rect;
                 GetWindowRect(&rect);
                 ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
+                
                 time(&m_workFlowTimer);
+                m_isInUserInputStage = true;
+                
                 m_stateMachine = STATE_PRICE_CONFIRM;
             }
         }
@@ -562,7 +600,7 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_workFlowTimer);
-            if (seconds >= INPUT_PRICE_DELAY)
+            if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
@@ -575,6 +613,7 @@ void Ct1Dlg::automateWorkFlow() {
                     //click back to input
                 }
                 time(&m_workFlowTimer);
+                m_isInUserInputStage = false;
                 /* need to optimize since this captcha too often cases, 
                    a flag to skip time-comsuing cal.
                  */ 
