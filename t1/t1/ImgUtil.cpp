@@ -1085,4 +1085,77 @@ namespace utl
         return ret;
     }
 
-}
+
+    TimeFilter::TimeFilter()
+        : MAX_CACHE(10)
+        , m_timeReady(false)
+    {
+    }
+
+    bool TimeFilter::process(std::string time)
+    {
+        const std::string originalTime = time;
+        time.erase(time.find_last_not_of(" \n") + 1);
+        if (time.size() != 8)
+            return false;
+        
+        // add checks ...
+
+        // right? 
+        // check if the first correct one?
+        //   no add
+
+        if (m_data.size() >= MAX_CACHE)
+        {
+            m_data.erase(m_data.begin());
+        }
+        m_data.push_back(time);
+
+        if (m_data.size() >= 3 && 
+            m_data.at(m_data.size() - 1) != m_data.at(m_data.size() - 2) &&
+            m_data.at(m_data.size() - 2) == m_data.at(m_data.size() - 3))
+        {
+            m_timeReady = true;
+            return true;
+        }
+        return false;
+        //   yes return true and set the final time as last one in vector
+        //      set true
+    }
+
+    bool TimeFilter::ready()
+    {
+        return m_timeReady;
+    }
+
+    std::string TimeFilter::getTime()
+    {
+        if (!m_timeReady)
+            throw std::exception("Time not ready");
+        return m_data.at(m_data.size() - 1);
+    }
+    
+    int TimeFilter::getHour()
+    {
+        if (!m_timeReady)
+            throw std::exception("Time not ready");
+        std::string time = m_data.at(m_data.size() - 1);
+    }
+
+    int TimeFilter::getMinute()
+    {
+        if (!m_timeReady)
+            throw std::exception("Time not ready");
+    }
+    
+    int TimeFilter::getSecond()
+    {
+        if (!m_timeReady)
+            throw std::exception("Time not ready");
+    }
+
+    /*
+    http://blog.csdn.net/aheroofeast/article/details/7860936
+    */
+
+} // end of util

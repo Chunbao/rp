@@ -71,6 +71,24 @@ namespace utl
 
     int getCaptionAreaHeight(HDC h1);
 
+    inline CString getWorkingPath()
+    {
+        wchar_t ownPth[MAX_PATH];
+        CString path;
+
+        // Will contain exe path
+        HMODULE hModule = GetModuleHandle(NULL);
+        if (hModule != NULL)
+        {
+            // When passing NULL to GetModuleHandle, it returns handle of exe itself
+            GetModuleFileNameW(hModule, path.AllocSysString(), (sizeof(ownPth)));
+
+            // Use above module handle to get the path using GetModuleFileName()
+            return path;
+        }
+    }
+
+
     /*
       Using the output of OCR, this class manipulate the price, and make it reasonable
       price according to the actual market price. Since  the output of OCR could be wrong.
@@ -84,6 +102,23 @@ namespace utl
 
     private:
         std::vector<std::pair<std::string, int>> m_data;
+        const int MAX_CACHE;
+    };
+
+    class TimeFilter
+    {
+    public:
+        TimeFilter();
+        bool process(std::string time);
+        bool ready();
+        std::string getTime();
+        int getHour();
+        int getMinute();
+        int getSecond();
+
+    private:
+        std::vector<std::string> m_data;
+        bool m_timeReady;
         const int MAX_CACHE;
     };
 }

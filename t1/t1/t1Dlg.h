@@ -66,6 +66,7 @@ private:
     cv::Point captureTemplate(const std::string& templ);
 
     void performPriceRecognition();
+    void performTimeRecognition();
 
 public:
 
@@ -93,7 +94,7 @@ private:
     //flag to stop captureTemplate from executing
     bool m_isInUserInputStage;
 
-    // in seconds, +1 if server is 1 second faster than local
+    // in seconds?, +1 if server is 1 second faster than local
     int m_timeDiff;
 
     enum STATE_MACHINE

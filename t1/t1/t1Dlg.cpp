@@ -71,6 +71,7 @@ const int PERFORM_SEND_PRICE_POINT = 300;
 static int DIALOG_FRAME_LEFT_WIDTH;
 static int DIALOG_FRAME_TOP_HEIGHT;
 static utl::PriceFilter PriceOCRFilter;
+static utl::TimeFilter TimeAccurateFilter;
 
 
 const std::string ENHANCED_AREA_BEFORE("TmpPriceClip.bmp");
@@ -433,6 +434,20 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         infoPanelEditor.SetWindowText(coordinates);
     }
 
+    if (m_timeDiff == 0)
+    {
+        if (!TimeAccurateFilter.ready())
+        {
+            performTimeRecognition();
+        }
+        else
+        {
+            CString coordinates;
+            coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
+            editorMy.SetWindowText(coordinates);
+        }
+    }
+
     performPriceRecognition();
 
     if (manageUserEvent(pMsg))
@@ -449,7 +464,6 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 void Ct1Dlg::performPriceRecognition()
 {
     std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
-    //double seconds = difftime(now, m_priceTimer);
     std::chrono::milliseconds elapsed =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
     if (elapsed.count() >= 200)
@@ -472,12 +486,35 @@ void Ct1Dlg::performPriceRecognition()
         }
         m_bidPrice = PriceOCRFilter.process(price);
 
+#if 0 // calculate captureText time
         CString coordinates;
         coordinates.Format(_T("%s, %d, %d"),
             CString(price.c_str()),
             m_bidPrice,
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now).count());
         editorMy.SetWindowText(coordinates);
+#endif
+        m_priceTimer = std::chrono::high_resolution_clock::now();
+    }
+}
+
+void Ct1Dlg::performTimeRecognition()
+{
+
+    std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+    std::chrono::milliseconds elapsed =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
+    if (elapsed.count() >= 100)
+    {
+        img::writePriceToFile(GetDC()->m_hDC,
+            RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
+            RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
+            RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
+            RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
+            ENHANCED_AREA_BEFORE);
+        img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+        std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
+        TimeAccurateFilter.process(time);
 
         m_priceTimer = std::chrono::high_resolution_clock::now();
     }
@@ -507,9 +544,13 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
                 ENHANCED_AREA_BEFORE);
             img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
-            std::string price = captureEnhancedText(ENHANCED_AREA_AFTER);
+            std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
 
             // ... @todo
+            CString coordinates;
+            coordinates.Format(_T("%s"), CString(time.c_str()));
+            editorMy.SetWindowText(coordinates);
+
         }
         else if (pMsg->wParam == VK_F5)
         {
