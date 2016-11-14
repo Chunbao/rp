@@ -76,21 +76,24 @@ namespace utl
 
     int getCaptionAreaHeight(HDC h1);
 
+    // Ugly code, needs to be improved
     inline CString getWorkingPath()
     {
         wchar_t ownPth[MAX_PATH];
-        CString path;
 
         // Will contain exe path
         HMODULE hModule = GetModuleHandle(NULL);
         if (hModule != NULL)
         {
             // When passing NULL to GetModuleHandle, it returns handle of exe itself
-            GetModuleFileNameW(hModule, path.AllocSysString(), (sizeof(ownPth)));
+            GetModuleFileNameW(hModule, ownPth, (sizeof(ownPth)));
 
             // Use above module handle to get the path using GetModuleFileName()
-            return path;
+            //return path;
         }
+        CString path = CString(&ownPth[0]);
+        path.Replace("t1.exe", "");
+        return path;
     }
 
 

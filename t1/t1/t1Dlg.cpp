@@ -75,20 +75,28 @@ static int DIALOG_FRAME_LEFT_WIDTH;
 static int DIALOG_FRAME_TOP_HEIGHT;
 static utl::PriceFilter PriceOCRFilter;
 static utl::TimeFilter TimeAccurateFilter;
-
+static CString EXECUTABLE_PATH_BASE;
 
 const std::string ENHANCED_AREA_BEFORE("TmpPriceClip.bmp");
 const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
-const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
-const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
-const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
-const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
-//const std::string     BUTTON_OK_FILE(".\\ok.bmp");
-//const std::string BUTTON_CANCEL_FILE(".\\cancel.bmp");
-//const std::string BUTTON_REFRESH_FILE(".\\refresh.bmp");
-//const std::string DIALOG_CAPTURE_TMP(".\\Capture_tmp.bmp");
+
+//const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
+//const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
+//const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
+//const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
+std::string     BUTTON_OK_FILE((LPCTSTR)a1);
+
+CString a2 = utl::getWorkingPath() + CString(_T("cancel.bmp"));
+std::string BUTTON_CANCEL_FILE((LPCTSTR)a2);
+
+CString a3 = utl::getWorkingPath() + CString(_T("refresh.bmp"));
+std::string BUTTON_REFRESH_FILE((LPCTSTR)a3);
+
+CString a4 = utl::getWorkingPath() + CString(_T("Capture_tmp.bmp"));
+std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4); 
 
 
 // CWnd::BringWindowToTop
@@ -290,6 +298,7 @@ BOOL Ct1Dlg::OnInitDialog()
 */
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
+    EXECUTABLE_PATH_BASE = utl::getWorkingPath();
 
     m_confirmPriceSeconds.AddString(_T("42s"));
     m_confirmPriceSeconds.AddString(_T("43s"));
@@ -419,7 +428,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
         //char systemTime[150];
         CString systemTime;
-        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s\n"),
+        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s, %s\n"),
                             sys_time.wYear,
                             sys_time.wMonth,
                             sys_time.wDay,
@@ -431,7 +440,8 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
                             m_bidPrice,
                             m_bidUserFinalPrice - m_bidPrice - 300,
                             (int)m_stateMachine,
-                            st);
+                            st,
+                            utl::getWorkingPath());
         SetWindowText(systemTime);
 
         RECT rect;
