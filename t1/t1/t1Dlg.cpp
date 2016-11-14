@@ -21,6 +21,8 @@
 #include <fstream>
 #include <memory>
 #include <cstring>
+#include <time.h>
+#include <ctime>
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
 
@@ -214,6 +216,7 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_isInUserInputStage(false)
     , m_priceTimer(std::chrono::high_resolution_clock::now())
     , m_okPositionWhenSending(0 , 0)
+	, m_timeDiff(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -434,19 +437,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         infoPanelEditor.SetWindowText(coordinates);
     }
 
-    if (m_timeDiff == 0)
-    {
-        if (!TimeAccurateFilter.ready())
-        {
-            performTimeRecognition();
-        }
-        else
-        {
-            CString coordinates;
-            coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
-            editorMy.SetWindowText(coordinates);
-        }
-    }
+	performTimeRecognition();
 
     performPriceRecognition();
 
@@ -500,24 +491,52 @@ void Ct1Dlg::performPriceRecognition()
 
 void Ct1Dlg::performTimeRecognition()
 {
+	if (m_timeDiff == 0)
+	{
+		if (!TimeAccurateFilter.ready())
+		{
+			std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+			std::chrono::milliseconds elapsed =
+				std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
+			if (elapsed.count() >= 100)
+			{
+				img::writePriceToFile(GetDC()->m_hDC,
+					RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
+					RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
+					RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
+					RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
+					ENHANCED_AREA_BEFORE);
+				img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+				std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
+				TimeAccurateFilter.process(time);
 
-    std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
-    std::chrono::milliseconds elapsed =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
-    if (elapsed.count() >= 100)
-    {
-        img::writePriceToFile(GetDC()->m_hDC,
-            RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
-            RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
-            RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
-            RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
-            ENHANCED_AREA_BEFORE);
-        img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
-        std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
-        TimeAccurateFilter.process(time);
+				m_priceTimer = std::chrono::high_resolution_clock::now();
+			}
+		}
+		else
+		{
+			std::time_t t = std::time(NULL);
+			std::tm then_tm = *std::localtime(&t);
+			const std::string& timeAfterProcess = TimeAccurateFilter.getTime();
+			int hour = std::stoi(timeAfterProcess.substr(0, 2));
+			int minute = std::stoi(timeAfterProcess.substr(3, 2));
+			int second = std::stoi(timeAfterProcess.substr(6, 2));
+			then_tm.tm_hour = hour;
+			then_tm.tm_min = minute;
+			then_tm.tm_sec = second;
 
-        m_priceTimer = std::chrono::high_resolution_clock::now();
-    }
+			time_t timetThen = mktime(&then_tm);
+
+			std::chrono::time_point<std::chrono::system_clock>
+				then_tp = std::chrono::system_clock::from_time_t(timetThen);
+			std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
+			m_timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(local - then_tp).count();
+
+			CString coordinates;
+			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
+			editorMy.SetWindowText(coordinates);
+		}
+	}
 }
 
 bool Ct1Dlg::manageUserEvent(MSG* pMsg)

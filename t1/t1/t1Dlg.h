@@ -94,8 +94,8 @@ private:
     //flag to stop captureTemplate from executing
     bool m_isInUserInputStage;
 
-    // in seconds?, +1 if server is 1 second faster than local
-    int m_timeDiff;
+    // in milliseconds?, +1 if local is 1 second faster than server
+    long long m_timeDiff;
 
     enum STATE_MACHINE
     {
