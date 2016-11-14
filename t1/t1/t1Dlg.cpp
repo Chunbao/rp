@@ -21,8 +21,7 @@
 #include <fstream>
 #include <memory>
 #include <cstring>
-#include <time.h>
-#include <ctime>
+
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
 
@@ -61,6 +60,8 @@ const cv::Point PRICE_CONFIRM(824, 482);
 const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
 const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 const cv::Point CAPTCHA_INPUT(818, 478);
+
+const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
 
 //const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1 second
@@ -214,6 +215,7 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_bidPrice(0)
     , m_bidUserFinalPrice(0)
     , m_isInUserInputStage(false)
+    , m_useIntelligenceBid(false)
     , m_priceTimer(std::chrono::high_resolution_clock::now())
     , m_okPositionWhenSending(0 , 0)
 	, m_timeDiff(0)
@@ -289,6 +291,7 @@ BOOL Ct1Dlg::OnInitDialog()
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 
+    m_confirmPriceSeconds.AddString(_T("42s"));
     m_confirmPriceSeconds.AddString(_T("43s"));
     m_confirmPriceSeconds.AddString(_T("44s"));
     m_confirmPriceSeconds.AddString(_T("45s"));
@@ -297,7 +300,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceSeconds.AddString(_T("48s"));
     m_confirmPriceSeconds.AddString(_T("49s"));
     m_confirmPriceSeconds.AddString(_T("50s"));
-    m_confirmPriceSeconds.SetCurSel(4);
+    m_confirmPriceSeconds.SetCurSel(3);
 
     m_confirmPriceAdd.AddString(_T("400"));
     m_confirmPriceAdd.AddString(_T("500"));
@@ -308,7 +311,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1000"));
     m_confirmPriceAdd.AddString(_T("1100"));
     m_confirmPriceAdd.AddString(_T("1200"));
-    m_confirmPriceAdd.SetCurSel(4);
+    m_confirmPriceAdd.SetCurSel(6);
 
     //int nIndex = m_cbExample.GetCurSel();
     //CString strCBText;
@@ -316,7 +319,8 @@ BOOL Ct1Dlg::OnInitDialog()
 
     //@todo, read local file to check if it is registered
 	editorMy.SetWindowText(_T("Hello world..."));
-    
+    CEdit infoPanelEditor;
+
     //CString strURL("http://www.baidu.com");
 	CString strURL("http://moni.51hupai.org/");
 	if(false/*if registered*/)
@@ -409,9 +413,13 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         SYSTEMTIME sys_time;
         GetLocalTime(&sys_time);
 
+        std::tm server = utl::getServerTime(m_timeDiff);
+        CString st;
+        st.Format(_T("国拍时间 %02d:%02d:%02d "), server.tm_hour, server.tm_min, server.tm_sec);
+
         //char systemTime[150];
         CString systemTime;
-        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d\n"),
+        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s\n"),
                             sys_time.wYear,
                             sys_time.wMonth,
                             sys_time.wDay,
@@ -422,10 +430,9 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
                             sys_time.wDayOfWeek,
                             m_bidPrice,
                             m_bidUserFinalPrice - m_bidPrice - 300,
-                            (int)m_stateMachine);
+                            (int)m_stateMachine,
+                            st);
         SetWindowText(systemTime);
-        //editorMy.SetWindowTextA(systemTime);
-        //system("time");
 
         RECT rect;
         GetWindowRect(&rect);
@@ -517,20 +524,19 @@ void Ct1Dlg::performTimeRecognition()
 		{
 			std::time_t t = std::time(NULL);
 			std::tm then_tm = *std::localtime(&t);
-			const std::string& timeAfterProcess = TimeAccurateFilter.getTime();
-			int hour = std::stoi(timeAfterProcess.substr(0, 2));
-			int minute = std::stoi(timeAfterProcess.substr(3, 2));
-			int second = std::stoi(timeAfterProcess.substr(6, 2));
-			then_tm.tm_hour = hour;
-			then_tm.tm_min = minute;
-			then_tm.tm_sec = second;
+			then_tm.tm_hour = TimeAccurateFilter.getHour();
+			then_tm.tm_min = TimeAccurateFilter.getMinute();
+			then_tm.tm_sec = TimeAccurateFilter.getSecond();
 
 			time_t timetThen = mktime(&then_tm);
-
 			std::chrono::time_point<std::chrono::system_clock>
 				then_tp = std::chrono::system_clock::from_time_t(timetThen);
 			std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
 			m_timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(local - then_tp).count();
+            if (m_timeDiff == 0)
+            {
+                m_timeDiff = -1; // This big change case should never happen in theory. Set 1 milliseconds just in case
+            }
 
 			CString coordinates;
 			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
@@ -598,7 +604,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F6)
         {
-            //utl::getCaptionAreaHeight(GetDC()->m_hDC);
+            /* keep !!!
+            Consider moving this functionality to vk_escape
             if (m_stateMachine != STATE_NONE)
             {
                 RECT rect;
@@ -609,25 +616,32 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                     return true;
                 }
             }
+            */
+            // simplified error handling
+            if (m_stateMachine != STATE_NONE)
+            {
+                return true;
+            }
+
             /// click button
             RECT rect;
             GetWindowRect(&rect);
             ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
             ipt::keyboardSendBackspaceKey(7);
-            /*
-            std::string price = captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str();
-            if (price.empty())
+
+            if (!m_useIntelligenceBid)
             {
-                return true;
+                const int nIndex = m_confirmPriceAdd.GetCurSel();
+                CString strCBText;
+                m_confirmPriceAdd.GetLBText(nIndex, strCBText);
+                m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
+                m_useIntelligenceBid = true;
             }
-
-            m_bidPrice = std::stoi(price);
-            */
-            int nIndex = m_confirmPriceAdd.GetCurSel();
-            CString strCBText;
-            m_confirmPriceAdd.GetLBText(nIndex, strCBText);
-            m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
-
+            else
+            {
+                m_bidUserFinalPrice = m_bidPrice + prc::getIntelligencePrice(m_timeDiff);
+            }
+            
             std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
             ipt::keyboardSendUnicodeInput(predicatePrice);
 
@@ -670,7 +684,22 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
 }
 
 void Ct1Dlg::automateWorkFlow() {
-
+    
+    //start automatically
+    if (m_stateMachine == STATE_NONE)
+    {
+        const int nIndex = m_confirmPriceSeconds.GetCurSel();
+        CString strSecond;
+        m_confirmPriceSeconds.GetLBText(nIndex, strSecond);
+        const int seconds = _ttoi(strSecond);
+        std::tm server = utl::getServerTime(m_timeDiff);
+        if (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds)
+        {
+            ipt::keyboardSendF6Key();
+            // No need to record wf time
+        }
+    }
+    
     if (m_stateMachine != STATE_NONE)
     {
         if (m_stateMachine == STATE_PRICE_INPUT)
@@ -717,6 +746,8 @@ void Ct1Dlg::automateWorkFlow() {
                     /* need to optimize since this captcha too often cases,
                     a flag to skip time-comsuing cal.
                     */
+                    ipt::leftButtonClick(rect.left + REQUEST_TOO_OFTEN_BACKUP.x, 
+                                         rect.top + REQUEST_TOO_OFTEN_BACKUP.y);
                 }
                 time(&m_workFlowTimer);
                 m_isInUserInputStage = false; 
@@ -725,8 +756,10 @@ void Ct1Dlg::automateWorkFlow() {
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
+            std::tm server = utl::getServerTime(m_timeDiff);
             if (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT
-                /* @todo, or time out*/)
+                || (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 55)
+                /* @todo, or time out/deadline 11:29:55 force to send */)
             {
                 RECT rect;
                 GetWindowRect(&rect);

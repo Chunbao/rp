@@ -898,6 +898,22 @@ namespace ipt { // Virtual input of mouse of keyboard
         SendInput(1, &input_up, sizeof(input_up));//keyup 
     }
 
+    void keyboardSendF6Key()
+    {
+        INPUT input_down = { 0 };
+        input_down.type = INPUT_KEYBOARD;
+        input_down.ki.dwFlags = 0;
+        input_down.ki.wScan = 0;
+        input_down.ki.wVk = VK_F6;
+        SendInput(1, &input_down, sizeof(input_down));//keydown     
+        INPUT input_up = { 0 };
+        input_up.type = INPUT_KEYBOARD;
+        input_up.ki.wScan = 0;
+        input_up.ki.wVk = VK_F6;
+        input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
+        SendInput(1, &input_up, sizeof(input_up));//keyup 
+    }
+
     void keyboardSendBackspaceKey(unsigned int times)
     {
         for (int i = 0; i < times; ++i)
@@ -1139,23 +1155,66 @@ namespace utl
     {
         if (!m_timeReady)
             throw std::exception("Time not ready");
-        std::string time = m_data.at(m_data.size() - 1);
+        return std::stoi(getTime().substr(0, 2));
     }
 
     int TimeFilter::getMinute()
     {
         if (!m_timeReady)
             throw std::exception("Time not ready");
+        return std::stoi(getTime().substr(3, 2));
     }
     
     int TimeFilter::getSecond()
     {
         if (!m_timeReady)
             throw std::exception("Time not ready");
+        return std::stoi(getTime().substr(6, 2));
     }
 
+
+    std::tm getServerTime(long long timeDiff)
+    {
+        std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
+        std::time_t serverTime = std::chrono::system_clock::to_time_t(local - std::chrono::milliseconds(timeDiff));
+        std::tm server = *std::localtime(&serverTime);
+        return server;
+    }
     /*
     http://blog.csdn.net/aheroofeast/article/details/7860936
     */
 
 } // end of util
+
+
+namespace prc
+{
+    int getIntelligencePrice(long long timeDiff)
+    {
+        int ret(300);
+        std::tm server = utl::getServerTime(timeDiff);
+        const int hour = server.tm_hour;
+        const int min = server.tm_min;
+        const int sec = server.tm_sec;
+        if (hour == 11 && min == 29)
+        {
+            if (sec <= 35)
+                ret = 1100;
+            else if (sec >= 36 && sec <= 41)
+                ret = 1000;
+            else if (sec >= 42 && sec <= 45)
+                ret = 900;
+            else if (sec >= 46 && sec <= 48)
+                ret = 800;
+            else if (sec >= 49 && sec <= 50)
+                return 700;
+            else if (sec >= 51 && sec <= 52)
+                ret = 600;
+            else if (sec >= 53 && sec <= 55)
+                ret = 500;
+            else if (sec <= 56 && sec <= 59)
+                ret = 300;
+        }
+        return ret;
+    }
+}

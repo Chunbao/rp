@@ -4,6 +4,9 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
+
+#include <ctime>
+#include <chrono>
 // http://docs.opencv.org/2.4/modules/core/doc/basic_structures.html#mat-type
 // @@@!!! online specification
 
@@ -55,6 +58,8 @@ namespace ipt {
 
     void keyboardSendBackspaceKey();
 
+    void keyboardSendF6Key();
+
     void keyboardSendBackspaceKey(unsigned int times);
 
     void keyboardSendDeleteKey();
@@ -104,7 +109,11 @@ namespace utl
         std::vector<std::pair<std::string, int>> m_data;
         const int MAX_CACHE;
     };
-
+    /*
+      The mission of this class is to get the accurate server time.
+      Take a series of time snapshots, and filter out the most accurate one.
+          (the first different from previous shoule be the best)
+    */
     class TimeFilter
     {
     public:
@@ -121,4 +130,13 @@ namespace utl
         bool m_timeReady;
         const int MAX_CACHE;
     };
+
+    // Server time = local time - time difference
+    std::tm getServerTime(long long timeDiff);
+}
+
+namespace prc
+{
+    //price
+    int getIntelligencePrice(long long timeDiff);
 }
