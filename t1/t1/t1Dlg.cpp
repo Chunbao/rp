@@ -65,7 +65,7 @@ const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
 
 //const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1 second
-const int PERFORM_SEND_PRICE_POINT = 300;
+const int PERFORM_SEND_PRICE_POINT = 300 + 100;
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -88,12 +88,15 @@ const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
 CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
 std::string     BUTTON_OK_FILE((LPCTSTR)a1);
+const cv::Mat   BUTTON_OK_MAT = cv::imread(BUTTON_OK_FILE);
 
 CString a2 = utl::getWorkingPath() + CString(_T("cancel.bmp"));
 std::string BUTTON_CANCEL_FILE((LPCTSTR)a2);
+const cv::Mat   BUTTON_CANCEL_MAT = cv::imread(BUTTON_CANCEL_FILE);
 
 CString a3 = utl::getWorkingPath() + CString(_T("refresh.bmp"));
 std::string BUTTON_REFRESH_FILE((LPCTSTR)a3);
+const cv::Mat   BUTTON_REFRESH_MAT = cv::imread(BUTTON_REFRESH_FILE);
 
 CString a4 = utl::getWorkingPath() + CString(_T("Capture_tmp.bmp"));
 std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4); 
@@ -426,7 +429,14 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         CString st;
         st.Format(_T("国拍时间 %02d:%02d:%02d "), server.tm_hour, server.tm_min, server.tm_sec);
 
-        //char systemTime[150];
+        CString systemTime;
+        systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, %s\n"),
+            m_bidPrice,
+            m_bidUserFinalPrice - m_bidPrice - 300,
+            (int)m_stateMachine,
+            st);
+        SetWindowText(systemTime);
+        /*
         CString systemTime;
         systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s, %s\n"),
                             sys_time.wYear,
@@ -443,6 +453,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
                             st,
                             utl::getWorkingPath());
         SetWindowText(systemTime);
+        */
 
         RECT rect;
         GetWindowRect(&rect);
@@ -614,19 +625,6 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F6)
         {
-            /* keep !!!
-            Consider moving this functionality to vk_escape
-            if (m_stateMachine != STATE_NONE)
-            {
-                RECT rect;
-                GetWindowRect(&rect);
-                cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
-                {
-                    return true;
-                }
-            }
-            */
             // simplified error handling
             if (m_stateMachine != STATE_NONE)
             {
@@ -665,26 +663,33 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //m_pBrowserMy.Refresh();
             if (m_stateMachine == STATE_PRICE_CONFIRM)
             {
-                if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
-                {
-                    cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
-                    if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
-                    {
-                        cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                        if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
-                        {
-                            m_okPositionWhenSending.x = capturedPosition.x;
-                            m_okPositionWhenSending.y = capturedPosition.y;
-                        }
-                    }
-                }
-
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
             }
         }
         else if (pMsg->wParam == VK_ESCAPE)
         {
+            // Consider moving this functionality to vk_escape
+            if (m_stateMachine != STATE_NONE)
+            {
+                RECT rect;
+                GetWindowRect(&rect);
+                cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_MAT);
+                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                {
+                    ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                }
+                else
+                {
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                    if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                    {
+                        ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
+                    }
+                }
+                m_stateMachine = STATE_NONE;
+            }
+            
             //Find any cancel click, or find ok to click
             return true;
         }
@@ -744,7 +749,7 @@ void Ct1Dlg::automateWorkFlow() {
             if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
             {
                 //precise match OK button, to make sure no dialog
-                cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
+                cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_MAT);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
@@ -758,6 +763,15 @@ void Ct1Dlg::automateWorkFlow() {
                     */
                     ipt::leftButtonClick(rect.left + REQUEST_TOO_OFTEN_BACKUP.x, 
                                          rect.top + REQUEST_TOO_OFTEN_BACKUP.y);
+                    if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
+                    {
+                        cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                        if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                        {
+                            m_okPositionWhenSending.x = capturedPosition.x;
+                            m_okPositionWhenSending.y = capturedPosition.y;
+                        }
+                    }
                 }
                 time(&m_workFlowTimer);
                 m_isInUserInputStage = false; 
@@ -766,10 +780,12 @@ void Ct1Dlg::automateWorkFlow() {
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
+            // 
+            const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT);
+            // deadline 11:29:55 force to send
             std::tm server = utl::getServerTime(m_timeDiff);
-            if (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT
-                || (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 55)
-                /* @todo, or time out/deadline 11:29:55 force to send */)
+            const bool deadlineArrived = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 55);
+            if (acceptedPriceRange || deadlineArrived)
             {
                 RECT rect;
                 GetWindowRect(&rect);
@@ -781,7 +797,7 @@ void Ct1Dlg::automateWorkFlow() {
                 {
                     // ideally, should never arrived here
                     assert(false);
-                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                 }
                 time(&m_workFlowTimer);
@@ -793,12 +809,12 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_workFlowTimer);
-            if (seconds >= INPUT_PRICE_DELAY)
+            if (seconds > INPUT_PRICE_DELAY*2)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
                 GetWindowRect(&rect);
-                cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
+                cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
@@ -871,7 +887,7 @@ std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
 
 
 //Very time consuming, 1.2 seconds uses
-cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
+cv::Point Ct1Dlg::captureTemplate(const cv::Mat& templ)
 {
     cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);
 
@@ -880,8 +896,7 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     cv::imwrite(DIALOG_CAPTURE_TMP, dialogShot);
     cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
     remove(DIALOG_CAPTURE_TMP.c_str());
-
-    cv::Mat templ = cv::imread(templateFile, 1);
+    
     cv::Mat result;
     int match_method = 0;
     int max_Trackbar = 5;

@@ -63,7 +63,7 @@ private:
     std::string captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
     std::string captureEnhancedText(std::string enhancedFile);
 
-    cv::Point captureTemplate(const std::string& templ);
+    cv::Point captureTemplate(const cv::Mat& templ);
 
     void performPriceRecognition();
     void performTimeRecognition();
