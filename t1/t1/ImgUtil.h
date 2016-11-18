@@ -123,6 +123,7 @@ namespace utl
         TimeFilter();
         bool process(std::string time);
         bool ready();
+        void reset();
         std::string getTime();
         int getHour();
         int getMinute();

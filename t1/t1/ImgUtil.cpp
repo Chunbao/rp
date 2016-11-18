@@ -1144,6 +1144,12 @@ namespace utl
         return m_timeReady;
     }
 
+    void TimeFilter::reset()
+    {
+        m_data.clear();
+        m_timeReady = false;
+    }
+
     std::string TimeFilter::getTime()
     {
         if (!m_timeReady)

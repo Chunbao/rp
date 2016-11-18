@@ -580,6 +580,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             //@todo, check state
             //m_pBrowserMy.GoBack();
+            m_timeDiff = 0;
+            TimeAccurateFilter.reset();
         }
         else if (pMsg->wParam == VK_F3)
         {
