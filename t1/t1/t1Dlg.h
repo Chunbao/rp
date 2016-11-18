@@ -113,4 +113,8 @@ private:
     CComboBox m_confirmPriceSeconds;
     // How much extra money to add based on you time
     CComboBox m_confirmPriceAdd;
+    // // sim compatibility real
+    CComboBox m_webMode;
+public:
+    afx_msg void OnCbnSelchangeComboMode();
 };

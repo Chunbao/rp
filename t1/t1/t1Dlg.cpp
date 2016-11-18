@@ -242,12 +242,14 @@ void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
     DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
     DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
+    DDX_Control(pDX, IDC_COMBO3, m_webMode);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
 	ON_WM_SYSCOMMAND()
 	//}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_Refresh, &Ct1Dlg::OnBnClickedButtonRefresh)
+    ON_CBN_SELCHANGE(IDC_COMBO3, &Ct1Dlg::OnCbnSelchangeComboMode)
 END_MESSAGE_MAP()
 
 
@@ -324,6 +326,12 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1100"));
     m_confirmPriceAdd.AddString(_T("1200"));
     m_confirmPriceAdd.SetCurSel(6);
+
+    m_webMode.AddString(_T("仿真"));
+    m_webMode.AddString(_T("兼容性"));
+    m_webMode.AddString(_T("实拍"));
+    m_webMode.AddString(_T("百度"));
+    m_webMode.SetCurSel(0);
 
     //int nIndex = m_cbExample.GetCurSel();
     //CString strCBText;
@@ -940,4 +948,27 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     //rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
     //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
     return  cv::Point(matchLoc.x + templ.cols / 2, matchLoc.y + templ.rows / 2);
+}
+
+
+void Ct1Dlg::OnCbnSelchangeComboMode()
+{
+    // TODO: Add your control notification handler code here
+    const int nIndex = m_webMode.GetCurSel();
+    if (nIndex == 0)
+    {
+        m_pBrowserMy.Navigate("http://moni.51hupai.org/", NULL, NULL, NULL, NULL);
+    }
+    else if (nIndex == 1)
+    {
+        m_pBrowserMy.Navigate("http://test.alltobid.com/", NULL, NULL, NULL, NULL);
+    }
+    else if (nIndex == 2)
+    {
+        m_pBrowserMy.Navigate("http://paimai.alltobid.com/", NULL, NULL, NULL, NULL);
+    }
+    else
+    {
+        m_pBrowserMy.Navigate("http://www.baidu.com/", NULL, NULL, NULL, NULL);
+    }
 }
