@@ -88,15 +88,15 @@ const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
 CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
 std::string     BUTTON_OK_FILE((LPCTSTR)a1);
-const cv::Mat   BUTTON_OK_MAT = cv::imread(BUTTON_OK_FILE);
+//const cv::Mat   BUTTON_OK_MAT = cv::imread(BUTTON_OK_FILE);
 
 CString a2 = utl::getWorkingPath() + CString(_T("cancel.bmp"));
 std::string BUTTON_CANCEL_FILE((LPCTSTR)a2);
-const cv::Mat   BUTTON_CANCEL_MAT = cv::imread(BUTTON_CANCEL_FILE);
+//const cv::Mat   BUTTON_CANCEL_MAT = cv::imread(BUTTON_CANCEL_FILE);
 
 CString a3 = utl::getWorkingPath() + CString(_T("refresh.bmp"));
 std::string BUTTON_REFRESH_FILE((LPCTSTR)a3);
-const cv::Mat   BUTTON_REFRESH_MAT = cv::imread(BUTTON_REFRESH_FILE);
+//const cv::Mat   BUTTON_REFRESH_MAT = cv::imread(BUTTON_REFRESH_FILE);
 
 CString a4 = utl::getWorkingPath() + CString(_T("Capture_tmp.bmp"));
 std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4); 
@@ -674,14 +674,14 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             {
                 RECT rect;
                 GetWindowRect(&rect);
-                cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_MAT);
+                cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                 }
                 else
                 {
-                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
                     if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                     {
                         ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
@@ -749,7 +749,7 @@ void Ct1Dlg::automateWorkFlow() {
             if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
             {
                 //precise match OK button, to make sure no dialog
-                cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_MAT);
+                cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
@@ -765,7 +765,7 @@ void Ct1Dlg::automateWorkFlow() {
                                          rect.top + REQUEST_TOO_OFTEN_BACKUP.y);
                     if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
                     {
-                        cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                        cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
                         if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                         {
                             m_okPositionWhenSending.x = capturedPosition.x;
@@ -797,7 +797,7 @@ void Ct1Dlg::automateWorkFlow() {
                 {
                     // ideally, should never arrived here
                     assert(false);
-                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                    cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                 }
                 time(&m_workFlowTimer);
@@ -814,7 +814,7 @@ void Ct1Dlg::automateWorkFlow() {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
                 GetWindowRect(&rect);
-                cv::Point capturedPosition = captureTemplate(BUTTON_OK_MAT);
+                cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
                 if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
@@ -887,7 +887,7 @@ std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
 
 
 //Very time consuming, 1.2 seconds uses
-cv::Point Ct1Dlg::captureTemplate(const cv::Mat& templ)
+cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
     cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);
 
@@ -897,6 +897,7 @@ cv::Point Ct1Dlg::captureTemplate(const cv::Mat& templ)
     cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
     remove(DIALOG_CAPTURE_TMP.c_str());
     
+    cv::Mat templ = cv::imread(templateFile, 1);
     cv::Mat result;
     int match_method = 0;
     int max_Trackbar = 5;
