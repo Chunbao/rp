@@ -965,7 +965,7 @@ void Ct1Dlg::OnCbnSelchangeComboMode()
     }
     else if (nIndex == 2)
     {
-        m_pBrowserMy.Navigate("http://paimai.alltobid.com/", NULL, NULL, NULL, NULL);
+        m_pBrowserMy.Navigate("https://paimai.alltobid.com/bid/2016111901/login.htm", NULL, NULL, NULL, NULL);
     }
     else
     {
