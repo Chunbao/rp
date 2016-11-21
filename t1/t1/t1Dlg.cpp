@@ -328,10 +328,10 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1200"));
     m_confirmPriceAdd.SetCurSel(6);
 
-    m_webMode.AddString(_T("ä»¿çœŸ"));
-    m_webMode.AddString(_T("å…¼å®¹æ€§"));
-    m_webMode.AddString(_T("å®æ‹"));
-    m_webMode.AddString(_T("ç™¾åº¦"));
+    m_webMode.AddString(_T("·ÂÕæ"));
+    m_webMode.AddString(_T("¼æÈİĞÔ"));
+    m_webMode.AddString(_T("ÊµÅÄ"));
+    m_webMode.AddString(_T("°Ù¶È"));
     m_webMode.SetCurSel(0);
 
     //int nIndex = m_cbExample.GetCurSel();
@@ -436,10 +436,10 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
         std::tm server = utl::getServerTime(m_timeDiff);
         CString st;
-        st.Format(_T("å›½æ‹æ—¶é—´ %02d:%02d:%02d "), server.tm_hour, server.tm_min, server.tm_sec);
+        st.Format(_T("¹úÅÄÊ±¼ä %02d:%02d:%02d "), server.tm_hour, server.tm_min, server.tm_sec);
 
         CString systemTime;
-        systemTime.Format(_T("å½“å‰ä»·æ ¼%d è·ç¦»æ¥å—åŒºé—´ %d, å·¥ä½œæµ %d, %s\n"),
+        systemTime.Format(_T("µ±Ç°¼Û¸ñ%d ¾àÀë½ÓÊÜÇø¼ä %d, ¹¤×÷Á÷ %d, %s\n"),
             m_bidPrice,
             m_bidUserFinalPrice - m_bidPrice - 300,
             (int)m_stateMachine,
@@ -447,7 +447,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         SetWindowText(systemTime);
         /*
         CString systemTime;
-        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d æ˜ŸæœŸ%1d å½“å‰ä»·æ ¼%d è·ç¦»å—ç†åŒºé—´ %d, å·¥ä½œæµ %d, %s, %s\n"),
+        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d ĞÇÆÚ%1d µ±Ç°¼Û¸ñ%d ¾àÀëÊÜÀíÇø¼ä %d, ¹¤×÷Á÷ %d, %s, %s\n"),
                             sys_time.wYear,
                             sys_time.wMonth,
                             sys_time.wDay,

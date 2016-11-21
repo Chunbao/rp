@@ -12,18 +12,18 @@ namespace img
     {
         HDC hBufDC;
         HBITMAP hBitmap, hBitTemp;
-        //åˆ›å»ºè®¾å¤‡ä¸Šä¸‹æ–‡(HDC)
+        //´´½¨Éè±¸ÉÏÏÂÎÄ(HDC)
         hBufDC = CreateCompatibleDC(hDC);
-        //åˆ›å»ºHBITMAP
+        //´´½¨HBITMAP
         hBitmap = CreateCompatibleBitmap(hDC, BitWidth, BitHeight);
         hBitTemp = (HBITMAP)SelectObject(hBufDC, hBitmap);
-        //å¾—åˆ°ä½å›¾ç¼“å†²åŒº
+        //µÃµ½Î»Í¼»º³åÇø
         //StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, 0, 0, BitWidth, BitHeight, SRCCOPY);
         StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, BitLeft, BitTop, BitWidth, BitHeight, SRCCOPY);
         
-        //å¾—åˆ°æœ€ç»ˆçš„ä½å›¾ä¿¡æ¯
+        //µÃµ½×îÖÕµÄÎ»Í¼ĞÅÏ¢
         hBitmap = (HBITMAP)SelectObject(hBufDC, hBitTemp);
-        //é‡Šæ”¾å†…å­˜
+        //ÊÍ·ÅÄÚ´æ
         DeleteObject(hBitTemp);
         ::DeleteDC(hBufDC);
         return hBitmap;
