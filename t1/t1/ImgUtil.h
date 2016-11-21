@@ -92,7 +92,7 @@ namespace utl
             //return path;
         }
         CString path = CString(&ownPth[0]);
-        path.Replace("t1.exe", "");
+        path.Replace(_T("t1.exe"), _T(""));
         return path;
     }
 
@@ -110,7 +110,7 @@ namespace utl
 
     private:
         std::vector<std::pair<std::string, int>> m_data;
-        const int MAX_CACHE;
+        const unsigned MAX_CACHE;
     };
     /*
       The mission of this class is to get the accurate server time.
@@ -132,7 +132,7 @@ namespace utl
     private:
         std::vector<std::string> m_data;
         bool m_timeReady;
-        const int MAX_CACHE;
+        const unsigned MAX_CACHE;
     };
 
     // Server time = local time - time difference

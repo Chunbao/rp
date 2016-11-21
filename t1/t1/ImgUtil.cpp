@@ -863,8 +863,8 @@ namespace ipt { // Virtual input of mouse of keyboard
         INPUT  Input = { 0 };
         Input.type = INPUT_MOUSE;
         Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-        Input.mi.dx = fx;
-        Input.mi.dy = fy;
+        Input.mi.dx = (long)fx;
+        Input.mi.dy = (long)fy;
         ::SendInput(1, &Input, sizeof(INPUT));
     }
 
@@ -877,8 +877,8 @@ namespace ipt { // Virtual input of mouse of keyboard
         INPUT  Input = { 0 };
         Input.type = INPUT_MOUSE;
         Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
-        Input.mi.dx = fx;
-        Input.mi.dy = fy;
+        Input.mi.dx = (long)fx;
+        Input.mi.dy = (long)fy;
         ::SendInput(1, &Input, sizeof(INPUT));
     }
 
@@ -916,7 +916,7 @@ namespace ipt { // Virtual input of mouse of keyboard
 
     void keyboardSendBackspaceKey(unsigned int times)
     {
-        for (int i = 0; i < times; ++i)
+        for (unsigned i = 0; i < times; ++i)
         {
             keyboardSendBackspaceKey();
         }
@@ -941,7 +941,7 @@ namespace ipt { // Virtual input of mouse of keyboard
     void keyboardSendUnicodeInput(std::string message)
     {
         assert(message.size() == 5);
-        for (int i = 0; i < message.size(); i++)
+        for (unsigned i = 0; i < message.size(); i++)
         {
             INPUT input_down = { 0 };
             input_down.type = INPUT_KEYBOARD;

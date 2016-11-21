@@ -82,10 +82,11 @@ const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
 
-//const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
-//const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
-//const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
-//const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
+const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
+const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
+const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+/*
 CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
 std::string     BUTTON_OK_FILE((LPCTSTR)a1);
 //const cv::Mat   BUTTON_OK_MAT = cv::imread(BUTTON_OK_FILE);
@@ -100,7 +101,7 @@ std::string BUTTON_REFRESH_FILE((LPCTSTR)a3);
 
 CString a4 = utl::getWorkingPath() + CString(_T("Capture_tmp.bmp"));
 std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4); 
-
+*/
 
 // CWnd::BringWindowToTop
 
@@ -957,18 +958,22 @@ void Ct1Dlg::OnCbnSelchangeComboMode()
     const int nIndex = m_webMode.GetCurSel();
     if (nIndex == 0)
     {
-        m_pBrowserMy.Navigate("http://moni.51hupai.org/", NULL, NULL, NULL, NULL);
+        CString strURL("http://moni.51hupai.org/");
+        m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
     }
     else if (nIndex == 1)
     {
-        m_pBrowserMy.Navigate("http://test.alltobid.com/", NULL, NULL, NULL, NULL);
+        CString strURL("http://test.alltobid.com/");
+        m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
     }
     else if (nIndex == 2)
     {
-        m_pBrowserMy.Navigate("https://paimai.alltobid.com/bid/2016111901/login.htm", NULL, NULL, NULL, NULL);
+        CString strURL("https://paimai.alltobid.com/bid/2016111901/login.htm");
+        m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
     }
     else
     {
-        m_pBrowserMy.Navigate("http://www.baidu.com/", NULL, NULL, NULL, NULL);
+        CString strURL("http://www.baidu.com/");
+        m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
     }
 }
