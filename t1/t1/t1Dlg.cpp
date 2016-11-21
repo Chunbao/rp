@@ -82,10 +82,10 @@ const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
 //@todo, make it im memory
 //@todo, support Chinese
 
-const std::string     BUTTON_OK_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\ok.bmp");
-const std::string BUTTON_CANCEL_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\cancel.bmp");
-const std::string BUTTON_REFRESH_FILE("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\refresh.bmp");
-const std::string DIALOG_CAPTURE_TMP("C:\\Users\\andrew\\Desktop\\rp\\trunk\\t1\\t1\\testdata\\Capture_tmp.bmp");
+const std::string     BUTTON_OK_FILE("..\\t1\\testdata\\ok.bmp");
+const std::string BUTTON_CANCEL_FILE("..\\t1\\testdata\\cancel.bmp");
+const std::string BUTTON_REFRESH_FILE("..\\t1\\testdata\\refresh.bmp");
+const std::string DIALOG_CAPTURE_TMP("..\\t1\\testdata\\Capture_tmp.bmp");
 /*
 CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
 std::string     BUTTON_OK_FILE((LPCTSTR)a1);
@@ -908,7 +908,13 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
     remove(DIALOG_CAPTURE_TMP.c_str());
     
-    cv::Mat templ = cv::imread(templateFile, 1);
+    //cv::Mat templ = cv::imread(templateFile, 1);
+    //replace imread to get Mat from stream
+    std::ifstream templateStream(templateFile, std::ios::binary);
+    std::vector<char> fileContents((std::istreambuf_iterator<char>(templateStream)),
+        std::istreambuf_iterator<char>());
+    cv::Mat templ = cv::imdecode(cv::Mat(fileContents), 1);
+    
     cv::Mat result;
     int match_method = 0;
     int max_Trackbar = 5;
