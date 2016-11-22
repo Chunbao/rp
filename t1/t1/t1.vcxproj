@@ -182,6 +182,8 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="C:\Users\jchun\Desktop\happycar.ico" />
+    <Image Include="C:\Users\jchun\Desktop\lamborghini.ico" />
     <Image Include="res\t1.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -232,7 +232,7 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_okPositionWhenSending(0 , 0)
 	, m_timeDiff(0)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_LAMBORGHINI);
 }
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
