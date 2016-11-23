@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4AA7160B-7C8A-4CF7-BD65-68DC61B25CEA}</ProjectGuid>
+    <RootNamespace>t1</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.23107.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <SourcePath>C:\Users\andrew\Desktop\rp\trunk\t1\3rd\opencv\sources;C:\Users\andrew\Desktop\rp\trunk\t1\3rd\opencv\sources\modules;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\3rd\BuildFolder\include;..\3rd\BuildFolder\include\leptonica;..\3rd\BuildFolder\include\tesseract;..\3rd\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\3rd\BuildFolder\lib;..\3rd\opencv\opencv_build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>liblept168.lib;libtesseract302.lib;libtiff394-static-mtdll.lib;giflib416-static-mtdll.lib;libjpeg8c-static-mtdll.lib;libpng143-static-mtdll.lib;zlib125-static-mtdll.lib;opencv_calib3d2413d.lib;opencv_contrib2413d.lib;opencv_core2413d.lib;opencv_features2d2413d.lib;opencv_flann2413d.lib;opencv_gpu2413d.lib;opencv_haartraining_engined.lib;opencv_highgui2413d.lib;opencv_imgproc2413d.lib;opencv_legacy2413d.lib;opencv_ml2413d.lib;opencv_nonfree2413d.lib;opencv_objdetect2413d.lib;opencv_ocl2413d.lib;opencv_photo2413d.lib;opencv_stitching2413d.lib;opencv_superres2413d.lib;opencv_ts2413d.lib;opencv_video2413d.lib;opencv_videostab2413d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CWebBrowser2.cpp" />
+    <ClCompile Include="ImgUtil.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="t1.cpp" />
+    <ClCompile Include="t1Dlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CWebBrowser2.h" />
+    <CustomBuild Include="Resource.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating map file for help compiler...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo // Generated Help Map file.  Used by t1.HHP. &gt; "hlp\HTMLDefines.h"
+echo. &gt; "hlp\HTMLDefines.h"
+echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Prompts (IDP_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDP_,HIDP_,0x30000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Resources (IDR_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDR_,HIDR_,0x20000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Dialogs (IDD_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDD_,HIDD_,0x20000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Frame Controls (IDW_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating map file for help compiler...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">echo // Generated Help Map file.  Used by t1.HHP. &gt; "hlp\HTMLDefines.h"
+echo. &gt; "hlp\HTMLDefines.h"
+echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Prompts (IDP_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDP_,HIDP_,0x30000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Resources (IDR_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDR_,HIDR_,0x20000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Dialogs (IDD_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h IDD_,HIDD_,0x20000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+echo. &gt;&gt; "hlp\HTMLDefines.h"
+echo // Frame Controls (IDW_*) &gt;&gt; "hlp\HTMLDefines.h"
+makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\HTMLDefines.h"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="ImgUtil.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="t1.h" />
+    <ClInclude Include="t1Dlg.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\t1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="t1.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="hlp\HIDD_ROOT_DIALOG.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\t1.hhc" />
+    <None Include="hlp\t1.hhk" />
+    <CustomBuild Include="hlp\t1.hhp">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Making help file...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">start /wait hhc "hlp\t1.hhp"
+if not exist "hlp\t1.chm" goto :HelpError
+copy "hlp\t1.chm" "$(OutDir)t1.chm"
+goto :HelpDone
+:HelpError
+echo hlp\t1.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Making help file...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">start /wait hhc "hlp\t1.hhp"
+if not exist "hlp\t1.chm" goto :HelpError
+copy "hlp\t1.chm" "$(OutDir)t1.chm"
+goto :HelpDone
+:HelpError
+echo hlp\t1.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="res\t1.rc2" />
+    <None Include="t1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties _x007B_8856F961-340A-11D0-A96B-00C04FD705A2_x007D_="CWebBrowser2" RESOURCE_FILE="t1.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
