@@ -9,8 +9,8 @@
 #define IDR_HTML_T1_DIALOG              104
 #define IDR_MAINFRAME                   128
 #define IDI_ICON_HAPPYCAR               130
-#define IDI_ICON_                       131
 #define IDI_ICON_LAMBORGHINI            131
+#define IDI_ICON_PANDA                  132
 #define IDC_EXPLORER1                   1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON_Refresh              1001
@@ -26,7 +26,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        132
+#define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101

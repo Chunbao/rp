@@ -170,9 +170,10 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\t1.ico"
-IDI_ICON_HAPPYCAR       ICON                    "C:\\Users\\jchun\\Desktop\\happycar.ico"
-IDI_ICON_LAMBORGHINI    ICON                    "C:\\Users\\jchun\\Desktop\\lamborghini.ico"
+IDR_MAINFRAME           ICON                    "res\\panda.ico"
+IDI_ICON_HAPPYCAR       ICON                    "res\\happycar.ico"
+IDI_ICON_LAMBORGHINI    ICON                    "res\\t1.ico"
+IDI_ICON_PANDA          ICON                    "res\\panda.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
