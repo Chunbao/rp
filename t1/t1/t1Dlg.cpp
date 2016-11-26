@@ -76,7 +76,7 @@ static int DIALOG_FRAME_LEFT_WIDTH;
 static int DIALOG_FRAME_TOP_HEIGHT;
 static utl::PriceFilter PriceOCRFilter;
 static utl::TimeFilter TimeAccurateFilter;
-static CString EXECUTABLE_PATH_BASE;
+static StaticImageCtrl staticImageCtrl;
 
 const std::string ENHANCED_AREA_BEFORE("TmpPriceClip.bmp");
 const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
@@ -305,7 +305,6 @@ BOOL Ct1Dlg::OnInitDialog()
 */
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
-    EXECUTABLE_PATH_BASE = utl::getWorkingPath();
 
     m_confirmPriceSeconds.AddString(_T("42s"));
     m_confirmPriceSeconds.AddString(_T("43s"));
@@ -483,6 +482,8 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
     {
         return true;
     }
+
+    performCaptchaProcessing(pMsg);
 	
     automateWorkFlow();
 
@@ -576,6 +577,42 @@ void Ct1Dlg::performTimeRecognition()
 	}
 }
 
+void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
+{
+    //std::tm server = utl::getServerTime(m_timeDiff);
+    //const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 15 && server.tm_sec <= 19);
+    if (STATE_CAPTCHA_READY == m_stateMachine/*pMsg->wParam == VK_F1*/ && !staticImageCtrl.isWorking())
+    {
+        HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC, 517, 438, 112 + 6, 49 + 6);
+        /*m_image = new StaticImageCtrl(this, hBitMap);
+        m_image->setVisible(8);*/
+        CStatic* pWnd = (CStatic*)GetDlgItem(IDC_STATIC_PIC);
+        pWnd->MoveWindow(517 - 50, 438 - 25, (112 + 6) * 2, (49 + 6) * 2);
+        pWnd->SetBitmap(hBitMap);
+        pWnd->SetWindowPos(NULL,
+            0,
+            0,
+            224,
+            98,
+            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
+        //pWnd->ShowWindow(SW_SHOW);
+        staticImageCtrl.setVisible(5, pWnd);
+    }
+
+    if (staticImageCtrl.isWorking())
+    {
+        if (staticImageCtrl.setInvisibleIfTimeIsup())
+        {
+            std::tm server = utl::getServerTime(m_timeDiff);
+            const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec <= 30);
+            if (preview)
+            {
+                ipt::keyboardSendKey(VK_ESCAPE);
+            }
+        }
+    } 
+}
+
 bool Ct1Dlg::manageUserEvent(MSG* pMsg)
 {
     //////////
@@ -585,6 +622,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             //@todo, check state
             //m_pBrowserMy.GoBack();
+            
+            return true;
         }
         else if (pMsg->wParam == VK_F2)
         {
@@ -673,7 +712,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             pMsg->wParam = VK_TAB;
             //m_pBrowserMy.Refresh();
-            if (m_stateMachine == STATE_PRICE_CONFIRM)
+            if (m_stateMachine == STATE_CAPTCHA_READY)
             {
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
@@ -720,9 +759,10 @@ void Ct1Dlg::automateWorkFlow() {
         m_confirmPriceSeconds.GetLBText(nIndex, strSecond);
         const int seconds = _ttoi(strSecond);
         std::tm server = utl::getServerTime(m_timeDiff);
-        if (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds)
+        if ((server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds)
+            || (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec > 10 && server.tm_sec < 15))
         {
-            ipt::keyboardSendF6Key();
+            ipt::keyboardSendKey(VK_F6);
             // No need to record wf time
         }
     }
@@ -784,11 +824,11 @@ void Ct1Dlg::automateWorkFlow() {
                             m_okPositionWhenSending.y = capturedPosition.y;
                         }
                     }
+                    m_stateMachine = STATE_CAPTCHA_READY;
                 }
                 time(&m_workFlowTimer);
                 m_isInUserInputStage = false; 
             }
-
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {

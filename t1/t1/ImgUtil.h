@@ -58,7 +58,7 @@ namespace ipt {
 
     void keyboardSendBackspaceKey();
 
-    void keyboardSendF6Key();
+    void keyboardSendKey(int key);
 
     void keyboardSendBackspaceKey(unsigned int times);
 

@@ -15,11 +15,11 @@ namespace img
         //创建设备上下文(HDC)
         hBufDC = CreateCompatibleDC(hDC);
         //创建HBITMAP
-        hBitmap = CreateCompatibleBitmap(hDC, BitWidth, BitHeight);
+        hBitmap = CreateCompatibleBitmap(hDC, BitWidth*2, BitHeight*2);
         hBitTemp = (HBITMAP)SelectObject(hBufDC, hBitmap);
         //得到位图缓冲区
         //StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, 0, 0, BitWidth, BitHeight, SRCCOPY);
-        StretchBlt(hBufDC, 0, 0, BitWidth, BitHeight, hDC, BitLeft, BitTop, BitWidth, BitHeight, SRCCOPY);
+        StretchBlt(hBufDC, 0, 0, BitWidth*2, BitHeight*2, hDC, BitLeft, BitTop, BitWidth, BitHeight, SRCCOPY);
         
         //得到最终的位图信息
         hBitmap = (HBITMAP)SelectObject(hBufDC, hBitTemp);
@@ -898,18 +898,18 @@ namespace ipt { // Virtual input of mouse of keyboard
         SendInput(1, &input_up, sizeof(input_up));//keyup 
     }
 
-    void keyboardSendF6Key()
+    void keyboardSendKey(int key)
     {
         INPUT input_down = { 0 };
         input_down.type = INPUT_KEYBOARD;
         input_down.ki.dwFlags = 0;
         input_down.ki.wScan = 0;
-        input_down.ki.wVk = VK_F6;
+        input_down.ki.wVk = key;
         SendInput(1, &input_down, sizeof(input_down));//keydown     
         INPUT input_up = { 0 };
         input_up.type = INPUT_KEYBOARD;
         input_up.ki.wScan = 0;
-        input_up.ki.wVk = VK_F6;
+        input_up.ki.wVk = key;
         input_up.ki.dwFlags = (int)(KEYEVENTF_KEYUP);
         SendInput(1, &input_up, sizeof(input_up));//keyup 
     }

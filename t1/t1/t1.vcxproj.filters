@@ -38,6 +38,9 @@
     <ClCompile Include="ImgUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StaticCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CWebBrowser2.h">
@@ -58,9 +61,18 @@
     <ClInclude Include="ImgUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StaticCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\t1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\panda.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\happycar.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

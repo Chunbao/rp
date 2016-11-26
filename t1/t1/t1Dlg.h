@@ -6,6 +6,7 @@
 
 #include "CWebBrowser2.h"
 #include "afxwin.h"
+#include "StaticCtrl.h"
 
 #include <opencv2\core\core.hpp>
 #include <string>
@@ -67,6 +68,7 @@ private:
 
     void performPriceRecognition();
     void performTimeRecognition();
+    void performCaptchaProcessing(MSG* pMsg);
 
 public:
 
@@ -100,6 +102,7 @@ private:
         STATE_NONE,
         STATE_PRICE_INPUT,
         STATE_PRICE_CONFIRM,
+        STATE_CAPTCHA_READY,
         STATE_PRICE_SEND,
         STATE_PRICE_RESULT
     };
