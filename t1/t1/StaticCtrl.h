@@ -9,8 +9,9 @@ public:
     StaticImageCtrl();
     ~StaticImageCtrl();
 
-    bool isWorking() const;
-    bool setVisible(int seconds, CStatic* cWnd);
+    bool isTimerWorking() const;
+    bool isCaptchaWorking() const;
+    bool setVisible(int seconds, CStatic* cWnd = nullptr);
     bool setInvisibleIfTimeIsup();
 
 private:
@@ -18,5 +19,7 @@ private:
     int m_visibleSeconds;
 
     CStatic* m_pCStatic_A;
+    bool m_timerWorking;
+    bool m_captchaWorking;
 };
 

@@ -245,6 +245,8 @@ void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
     DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
     DDX_Control(pDX, IDC_COMBO3, m_webMode);
+    DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
+    DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -581,7 +583,10 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
 {
     //std::tm server = utl::getServerTime(m_timeDiff);
     //const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 15 && server.tm_sec <= 19);
-    if (STATE_CAPTCHA_READY == m_stateMachine/*pMsg->wParam == VK_F1*/ && !staticImageCtrl.isWorking())
+    
+    if (m_captchaEnlarge.GetCheck() == BST_CHECKED &&
+        STATE_CAPTCHA_READY == m_stateMachine &&
+        !staticImageCtrl.isCaptchaWorking())
     {
         HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC, 517, 438, 112 + 6, 49 + 6);
         /*m_image = new StaticImageCtrl(this, hBitMap);
@@ -596,10 +601,10 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
             98,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
         //pWnd->ShowWindow(SW_SHOW);
-        staticImageCtrl.setVisible(5, pWnd);
+        staticImageCtrl.setVisible(5 /*seconds*/, pWnd);
     }
 
-    if (staticImageCtrl.isWorking())
+    if (staticImageCtrl.isTimerWorking())
     {
         if (staticImageCtrl.setInvisibleIfTimeIsup())
         {
@@ -610,7 +615,7 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
                 ipt::keyboardSendKey(VK_ESCAPE);
             }
         }
-    } 
+    }
 }
 
 bool Ct1Dlg::manageUserEvent(MSG* pMsg)
@@ -759,11 +764,17 @@ void Ct1Dlg::automateWorkFlow() {
         m_confirmPriceSeconds.GetLBText(nIndex, strSecond);
         const int seconds = _ttoi(strSecond);
         std::tm server = utl::getServerTime(m_timeDiff);
-        if ((server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds)
-            || (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec > 10 && server.tm_sec < 15))
+        const bool formal = server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds;
+        const bool preview = (m_captchaPreview.GetCheck() == BST_CHECKED) &&
+                             (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec > 10 && server.tm_sec < 15);
+        if (formal || preview)
         {
             ipt::keyboardSendKey(VK_F6);
             // No need to record wf time
+        }
+        if (preview)
+        {
+            staticImageCtrl.setVisible(5 /*seconds*/);
         }
     }
     

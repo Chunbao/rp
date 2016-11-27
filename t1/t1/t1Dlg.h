@@ -120,4 +120,6 @@ private:
     CComboBox m_webMode;
 public:
     afx_msg void OnCbnSelchangeComboMode();
+    CButton m_captchaEnlarge;
+    CButton m_captchaPreview;
 };
