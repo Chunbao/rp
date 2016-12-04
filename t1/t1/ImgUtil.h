@@ -10,6 +10,9 @@
 // http://docs.opencv.org/2.4/modules/core/doc/basic_structures.html#mat-type
 // @@@!!! online specification
 
+extern const cv::Point TEMPLATE_AREA_LEFT;
+extern const cv::Point TEMPLATE_AREA_RIGHT;
+
 namespace img
 {
     //@make first 2 available
@@ -20,6 +23,8 @@ namespace img
     HBITMAP IplImage2hBitmap(IplImage* pImg);
 
     cv::Mat hwnd2mat(HWND hwnd, int, int);
+
+    cv::Mat hSmallwnd2mat(HWND hwnd, int, int);
 
     class Image
     {
@@ -71,6 +76,14 @@ namespace ipt {
 namespace utl
 {
     bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight);
+
+    bool ifOkNormalInRange(const cv::Point& target);
+
+    bool ifOkMiddleInRange(const cv::Point& target);
+
+    bool ifCancelInRange(const cv::Point& target);
+
+    bool ifRefreshInRange(const cv::Point& target);
 
     int getBorderAreaWidth(HDC h1);
 

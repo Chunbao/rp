@@ -58,8 +58,6 @@ const int RELATIVE_BOTTOM_TIME = 469;
 const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
 const cv::Point PRICE_CONFIRM(824, 482);
 
-const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
-const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
 const cv::Point CAPTCHA_INPUT(818, 478);
 
 const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
@@ -691,7 +689,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             RECT rect;
             GetWindowRect(&rect);
             ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
-            ipt::keyboardSendBackspaceKey(7);
+            ipt::keyboardSendBackspaceKey(6);
 
             if (!m_useIntelligenceBid)
             {
@@ -731,14 +729,14 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 RECT rect;
                 GetWindowRect(&rect);
                 cv::Point capturedPosition = captureTemplate(BUTTON_CANCEL_FILE);
-                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                if (utl::ifCancelInRange(capturedPosition))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                 }
                 else
                 {
                     cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                    if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                    if (utl::ifOkMiddleInRange(capturedPosition))
                     {
                         ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     }
@@ -813,7 +811,7 @@ void Ct1Dlg::automateWorkFlow() {
             {
                 //precise match OK button, to make sure no dialog
                 cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
-                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                if (utl::ifRefreshInRange(capturedPosition))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
@@ -829,7 +827,7 @@ void Ct1Dlg::automateWorkFlow() {
                     if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
                     {
                         cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                        if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                        if (utl::ifOkNormalInRange(capturedPosition))
                         {
                             m_okPositionWhenSending.x = capturedPosition.x;
                             m_okPositionWhenSending.y = capturedPosition.y;
@@ -872,13 +870,13 @@ void Ct1Dlg::automateWorkFlow() {
             time_t now;
             time(&now);
             double seconds = difftime(now, m_workFlowTimer);
-            if (seconds > INPUT_PRICE_DELAY*2)
+            if (seconds > INPUT_PRICE_DELAY)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
                 GetWindowRect(&rect);
                 cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
-                if (utl::ifInRange(capturedPosition, VALID_BUTTON_AREA_LEFT, VALID_BUTTON_AREA_RIGHT))
+                if (utl::ifOkMiddleInRange(capturedPosition))
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
@@ -914,10 +912,12 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
 #endif
 
     // For testing purpose
-    //RECT rect;
-    //GetWindowRect(&rect);
-	//GetScreenShot(rect.left + relativeLeft, rect.top + relativeTop, relativeRight - relativeLeft, relativeBottom - relativeTop);
-	tesseract::TessBaseAPI tesseract_ptr;
+    /*const cv::Point templateArea1(454, 228);
+    const cv::Point templateArea2(904, 660);
+    RECT rect;
+    GetWindowRect(&rect);*/
+
+    tesseract::TessBaseAPI tesseract_ptr;
 	tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
 	tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
 	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
@@ -952,7 +952,7 @@ std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
 //Very time consuming, 1.2 seconds uses
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
 {
-    cv::Mat dialogShot = img::hwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);
+    cv::Mat dialogShot = img::hSmallwnd2mat(WindowFromDC(GetDC()->m_hDC), DIALOG_FRAME_LEFT_WIDTH, DIALOG_FRAME_TOP_HEIGHT);
 
     //@todo, there will be a crash if do NOT save to local disk
     int res = remove(DIALOG_CAPTURE_TMP.c_str());
@@ -1006,7 +1006,7 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     /// Show me what you got
     //rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
     //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
-    return  cv::Point(matchLoc.x + templ.cols / 2, matchLoc.y + templ.rows / 2);
+    return  cv::Point(TEMPLATE_AREA_LEFT.x + matchLoc.x + templ.cols / 2, TEMPLATE_AREA_LEFT.y + matchLoc.y + templ.rows / 2);
 }
 
 

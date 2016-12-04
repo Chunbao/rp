@@ -5,6 +5,23 @@
 
 
 
+//const cv::Point VALID_BUTTON_AREA_LEFT(468, 305);
+//const cv::Point VALID_BUTTON_AREA_RIGHT(892, 592);
+
+const cv::Point TEMPLATE_AREA_LEFT(454, 228);
+const cv::Point TEMPLATE_AREA_RIGHT(904, 660);
+
+static const cv::Point OK_MIDDLE_LEFT_VALID(664, 533);
+static const cv::Point OK_MIDDLE_RIGHT_VALID(716, 552);
+static const cv::Point OK_NORMAL_LEFT_VALID(558, 553);
+static const cv::Point OK_NORMAL_RIGHT_VALID(608, 572);
+
+static const cv::Point CANCEL_LEFT_VALID(748, 553);
+static const cv::Point CANCEL_RIGHT_VALID(796, 572);
+static const cv::Point REFRESH_LEFT_VALID(526, 469);
+static const cv::Point REFRESH_RIGHT_VALID(637, 515);
+
+
 namespace img
 {
     //http://www.newxing.com/Tech/Program/Cpp/695.html
@@ -136,6 +153,62 @@ namespace img
         StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, -dialogFrameLeftWidth, -dialogFrameTopHeight, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
         GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
                                                                              // avoid memory leak
+        DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
+        return src;
+    }
+
+    cv::Mat hSmallwnd2mat(HWND hwnd, int dialogFrameLeftWidth, int dialogFrameTopHeight) 
+    {
+        HDC hwindowDC, hwindowCompatibleDC;
+
+        int height, width, srcheight, srcwidth;
+        HBITMAP hbwindow;
+        cv::Mat src;
+        BITMAPINFOHEADER  bi;
+
+        hwindowDC = GetDC(hwnd);
+        hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
+        SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
+
+        RECT windowsize;    // get the height and width of the screen
+        GetWindowRect(hwnd, &windowsize);
+
+        srcheight = windowsize.bottom;
+        srcwidth = windowsize.right;
+
+        //height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
+        //width = windowsize.right / 2;
+
+        height = TEMPLATE_AREA_RIGHT.y - TEMPLATE_AREA_LEFT.y;  //change this to whatever size you want to resize to
+        width = TEMPLATE_AREA_RIGHT.x - TEMPLATE_AREA_LEFT.x;
+
+        //src.create(height, width, CV_8UC4); // OK code
+        src.create(height, width, CV_8UC4); //CV_32FC1??? wrong
+
+                                            // create a bitmap
+        hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
+        bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
+        bi.biWidth = width;
+        bi.biHeight = -height;  //this is the line that makes it draw upside down or not
+        bi.biPlanes = 1;
+        bi.biBitCount = 32;
+
+        bi.biCompression = BI_RGB;
+        bi.biSizeImage = 0;
+        bi.biXPelsPerMeter = 0;
+        bi.biYPelsPerMeter = 0;
+        bi.biClrUsed = 0;
+        bi.biClrImportant = 0;
+
+        // use the previously created device context with the bitmap
+        SelectObject(hwindowCompatibleDC, hbwindow);
+
+        // copy from the window device context to the bitmap device context
+        //StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+        StretchBlt(hwindowCompatibleDC, 0, 0, width, height, 
+                   hwindowDC, TEMPLATE_AREA_LEFT.x - dialogFrameLeftWidth, TEMPLATE_AREA_LEFT.y - dialogFrameTopHeight, width, height, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+        GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
+                                                                                                           // avoid memory leak
         DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
         return src;
     }
@@ -963,10 +1036,35 @@ namespace ipt { // Virtual input of mouse of keyboard
 
 namespace utl
 {
+
     bool ifInRange(const cv::Point& target, const cv::Point& validLeft, const cv::Point& validRight)
     {
         return (target.x > validLeft.x && target.x < validRight.x)
             && (target.y > validLeft.y && target.y < validRight.y);
+    }
+
+    bool ifOkNormalInRange(const cv::Point& target)
+    {
+        return (target.x > OK_NORMAL_LEFT_VALID .x && target.x < OK_NORMAL_RIGHT_VALID.x)
+            && (target.y > OK_NORMAL_LEFT_VALID.y && target.y < OK_NORMAL_RIGHT_VALID.y);
+    }
+
+    bool ifOkMiddleInRange(const cv::Point& target)
+    {
+        return (target.x > OK_MIDDLE_LEFT_VALID.x && target.x < OK_MIDDLE_RIGHT_VALID.x)
+            && (target.y > OK_MIDDLE_LEFT_VALID.y && target.y < OK_MIDDLE_RIGHT_VALID.y);
+    }
+
+    bool ifCancelInRange(const cv::Point& target) 
+    {
+        return (target.x > CANCEL_LEFT_VALID.x && target.x < CANCEL_RIGHT_VALID.x)
+            && (target.y > CANCEL_LEFT_VALID.y && target.y < CANCEL_RIGHT_VALID.y);
+    }
+
+    bool ifRefreshInRange(const cv::Point& target) 
+    {
+        return (target.x > REFRESH_LEFT_VALID.x && target.x < REFRESH_RIGHT_VALID.x)
+            && (target.y > REFRESH_LEFT_VALID.y && target.y < REFRESH_RIGHT_VALID.y);
     }
 
     int getBorderAreaWidth(HDC h1)
