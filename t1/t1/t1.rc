@@ -116,6 +116,45 @@ BEGIN
     0
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000404e4"
+        BEGIN
+            VALUE "CompanyName", "熊猫智能拍牌"
+            VALUE "FileDescription", "上海市个人车牌额度智能拍卖软件"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "Panda.exe"
+            VALUE "LegalCopyright", "熊猫智能机器人"
+            VALUE "OriginalFilename", "Panda.exe"
+            VALUE "ProductName", "熊猫助拍"
+            VALUE "ProductVersion", "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x4, 1252
+    END
+END
+
 #endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -184,45 +223,6 @@ IDI_ICON_PANDA          ICON                    "res\\panda.ico"
 //
 
 IDR_HTML_T1_DIALOG      HTML                    "t1.htm"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000404e4"
-        BEGIN
-            VALUE "CompanyName", "DD"
-            VALUE "FileDescription", "koguopai"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "t1.exe"
-            VALUE "LegalCopyright", "DD"
-            VALUE "OriginalFilename", "t1.exe"
-            VALUE "ProductName", "K.O. GuoPai"
-            VALUE "ProductVersion", "1.0.0.1"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x4, 1252
-    END
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
