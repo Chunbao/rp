@@ -1288,6 +1288,24 @@ namespace utl
     http://blog.csdn.net/aheroofeast/article/details/7860936
     */
 
+
+    long long timeLeftInMilliseconds(long long timeDiff)
+    {
+        std::time_t t = std::time(NULL);
+        std::tm then_tm = *std::localtime(&t);
+        then_tm.tm_hour = 11;
+        then_tm.tm_min = 30;
+        then_tm.tm_sec = 0;
+
+        time_t timetThen = mktime(&then_tm);
+        std::chrono::time_point<std::chrono::system_clock>
+            then_tp = std::chrono::system_clock::from_time_t(timetThen);
+        std::chrono::system_clock::time_point server = std::chrono::system_clock::now()
+            - std::chrono::milliseconds(timeDiff);
+
+        long long timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(then_tp - server).count();
+        return timeLeft;
+    }
 } // end of util
 
 

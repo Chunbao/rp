@@ -150,6 +150,9 @@ namespace utl
 
     // Server time = local time - time difference
     std::tm getServerTime(long long timeDiff);
+
+    // The end time is 11:30:00, return time left(milliseconds), minus means past the deadline
+    long long timeLeftInMilliseconds(long long timeDiff);
 }
 
 namespace prc

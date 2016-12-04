@@ -118,6 +118,8 @@ private:
     CComboBox m_confirmPriceAdd;
     // // sim compatibility real
     CComboBox m_webMode;
+    // Send price x seconds earlier deadline
+    CComboBox m_forceSendPriceTime;
 public:
     afx_msg void OnCbnSelchangeComboMode();
     CButton m_captchaEnlarge;

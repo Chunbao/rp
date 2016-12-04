@@ -21,6 +21,7 @@
 #define IDC_COMBO2                      1008
 #define IDC_CHECK1                      1009
 #define IDC_CHECK_CAPTCHA_ENLARGE       1009
+#define IDC_COMBO4                      1010
 #define IDC_COMBO3                      1011
 #define IDC_STATIC_PIC                  1012
 #define IDC_CHECK_CAPTCHA_PREVIEW       1013

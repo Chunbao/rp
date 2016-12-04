@@ -245,6 +245,7 @@ void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO3, m_webMode);
     DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
     DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
+    DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -328,11 +329,14 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1200"));
     m_confirmPriceAdd.SetCurSel(6);
 
-    m_webMode.AddString(_T("仿真"));
-    m_webMode.AddString(_T("兼容性"));
-    m_webMode.AddString(_T("实拍"));
-    m_webMode.AddString(_T("百度"));
-    m_webMode.SetCurSel(0);
+    //TBD
+    //m_webMode.AddString(_T("仿真"));
+    //m_webMode.AddString(_T("兼容性"));
+    //m_webMode.AddString(_T("实拍"));
+    //m_webMode.AddString(_T("百度"));
+    m_webMode.SetCurSel(0); //
+
+    m_forceSendPriceTime.SetCurSel(0);
 
     //int nIndex = m_cbExample.GetCurSel();
     //CString strCBText;
@@ -809,7 +813,10 @@ void Ct1Dlg::automateWorkFlow() {
             double seconds = difftime(now, m_workFlowTimer);
             if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
             {
-                //precise match OK button, to make sure no dialog
+                //       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // @todo, this is a serious bug, the refresh doesn't function
+                //        because it always appear after OK/CANCEL button
+                //        Possible solution: add timer to iterate the finding of fresh button
                 cv::Point capturedPosition = captureTemplate(BUTTON_REFRESH_FILE);
                 if (utl::ifRefreshInRange(capturedPosition))
                 {
@@ -841,11 +848,13 @@ void Ct1Dlg::automateWorkFlow() {
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
-            // 
             const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT);
-            // deadline 11:29:55 force to send
-            std::tm server = utl::getServerTime(m_timeDiff);
-            const bool deadlineArrived = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 55);
+            const int nIndex = m_forceSendPriceTime.GetCurSel();
+            CString strSecond;
+            m_forceSendPriceTime.GetLBText(nIndex, strSecond);
+            const float seconds = _ttof(strSecond);
+
+            const bool deadlineArrived = (utl::timeLeftInMilliseconds(m_timeDiff) < (long long)seconds * 1000);
             if (acceptedPriceRange || deadlineArrived)
             {
                 RECT rect;
