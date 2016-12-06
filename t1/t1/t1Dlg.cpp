@@ -58,6 +58,8 @@ const int RELATIVE_BOTTOM_TIME = 469;
 const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
 const cv::Point PRICE_CONFIRM(824, 482);
 
+const cv::Point CAPTCHA_ENLARGE_AREA_LEFT(517, 438);
+const cv::Point CAPTCHA_ENLARGE_AREA_RIGHT(118, 55);
 const cv::Point CAPTCHA_INPUT(818, 478);
 
 const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
@@ -232,6 +234,13 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 	, m_timeDiff(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
+
+    logger::log1(_T("启动程序 ..."));
+}
+
+Ct1Dlg::~Ct1Dlg()
+{
+    logger::log(_T("退出程序 ..."));
 }
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
@@ -574,6 +583,8 @@ void Ct1Dlg::performTimeRecognition()
                 m_timeDiff = -1; // This big change case should never happen in theory. Set 1 milliseconds just in case
             }
 
+            logger::log(_T("校准国拍服务器时间 ..."));
+
 			CString coordinates;
 			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
 			editorMy.SetWindowText(coordinates);
@@ -590,11 +601,18 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
         STATE_CAPTCHA_READY == m_stateMachine &&
         !staticImageCtrl.isCaptchaWorking())
     {
-        HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC, 517, 438, 112 + 6, 49 + 6);
+        HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC, 
+                                         CAPTCHA_ENLARGE_AREA_LEFT.x,
+                                         CAPTCHA_ENLARGE_AREA_LEFT.y, 
+                                         CAPTCHA_ENLARGE_AREA_RIGHT.x, 
+                                         CAPTCHA_ENLARGE_AREA_RIGHT.y);
         /*m_image = new StaticImageCtrl(this, hBitMap);
         m_image->setVisible(8);*/
         CStatic* pWnd = (CStatic*)GetDlgItem(IDC_STATIC_PIC);
-        pWnd->MoveWindow(517 - 50, 438 - 25, (112 + 6) * 2, (49 + 6) * 2);
+        pWnd->MoveWindow(CAPTCHA_ENLARGE_AREA_LEFT.x - 50, 
+                         CAPTCHA_ENLARGE_AREA_LEFT.y - 25, 
+                         CAPTCHA_ENLARGE_AREA_RIGHT.x * 2, 
+                         CAPTCHA_ENLARGE_AREA_RIGHT.y * 2);
         pWnd->SetBitmap(hBitMap);
         pWnd->SetWindowPos(NULL,
             0,
@@ -603,6 +621,8 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
             98,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
         //pWnd->ShowWindow(SW_SHOW);
+
+        //@todo, add force hide if enter key is pressed
         staticImageCtrl.setVisible(5 /*seconds*/, pWnd);
     }
 
@@ -615,6 +635,7 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
             if (preview)
             {
                 ipt::keyboardSendKey(VK_ESCAPE);
+                logger::log(_T("验证码预览结束 ..."));
             }
         }
     }
@@ -659,6 +680,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         else if (pMsg->wParam == VK_F5)
         {
             m_pBrowserMy.Refresh();
+            logger::log(_T("网页刷新 ..."));
         }
         else if (pMsg->wParam == VK_F4)
         {
@@ -686,6 +708,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             // simplified error handling
             if (m_stateMachine != STATE_NONE)
             {
+                logger::log(_T("工作流处于非初始状态无法强制启动 ..."));
                 return true;
             }
 
@@ -702,10 +725,19 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 m_confirmPriceAdd.GetLBText(nIndex, strCBText);
                 m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
                 m_useIntelligenceBid = true;
+
+                CString log(_T("启动策略出价 ..."));
+                log.Format(_T("出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, _ttoi(strCBText)));
+                logger::log(log);
             }
             else
             {
-                m_bidUserFinalPrice = m_bidPrice + prc::getIntelligencePrice(m_timeDiff);
+                const int intelligencePrice = prc::getIntelligencePrice(m_timeDiff);
+                m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
+
+                CString log(_T("启动智能出价 ..."));
+                log.Format(_T("出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
+                logger::log(log);
             }
             
             std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
@@ -715,6 +747,16 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             time(&m_workFlowTimer);
             return true;
         }
+        else if (pMsg->wParam == VK_F7)
+        {
+            CString strURL;// ("https://paimai.alltobid.com/bid/2016111901/login.htm");
+            editorMy.GetWindowText(strURL);
+            m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
+
+            CString log(_T("访问用户指向网址："));
+            log += strURL;
+            logger::log(log);
+        }
         else if (pMsg->wParam == VK_RETURN)
         {
             pMsg->wParam = VK_TAB;
@@ -723,6 +765,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             {
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
+                logger::log(_T("电脑接管 等待出价时机..."));
             }
         }
         else if (pMsg->wParam == VK_ESCAPE)
@@ -746,6 +789,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                     }
                 }
                 m_stateMachine = STATE_NONE;
+                logger::log(_T("恢复工作流初始状态..."));
             }
             
             //Find any cancel click, or find ok to click
@@ -823,6 +867,7 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
                     //click back to input
+                    logger::log(_T("验证码已刷新..."));
                 }
                 else
                 {
@@ -838,6 +883,10 @@ void Ct1Dlg::automateWorkFlow() {
                         {
                             m_okPositionWhenSending.x = capturedPosition.x;
                             m_okPositionWhenSending.y = capturedPosition.y;
+
+                            CString log;
+                            log.Format(_T("已确定确认按钮坐标：(%d, %d)", m_okPositionWhenSending.x, m_okPositionWhenSending.y));
+                            logger::log(log);
                         }
                     }
                     m_stateMachine = STATE_CAPTCHA_READY;
@@ -872,6 +921,19 @@ void Ct1Dlg::automateWorkFlow() {
                 }
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_RESULT;
+
+                CString log;
+                log.Format(_T("正在出价 ... 国拍服务器当前价格：%d 最终出价：%d 出价原因：", m_bidPrice, m_bidUserFinalPrice));
+                if (acceptedPriceRange)
+                {
+                    log += _T("已进入出价区间（100余量）");
+                }
+                if (deadlineArrived)
+                {
+                    log += _T("临近出价截止时间还有 %ll毫秒", utl::timeLeftInMilliseconds(m_timeDiff));
+                }
+                //log = _T("正在出价 ") + log;
+                logger::log(log);
             }
         }
         else if (m_stateMachine == STATE_PRICE_RESULT)
@@ -889,6 +951,8 @@ void Ct1Dlg::automateWorkFlow() {
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
+                    
+                    logger::log(_T("已获取出价返回结果"));
                 }
                 time(&m_workFlowTimer);
             }

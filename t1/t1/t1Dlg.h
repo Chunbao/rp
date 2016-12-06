@@ -34,6 +34,7 @@ class Ct1Dlg : public CDHtmlDialog
 // Construction
 public:
 	Ct1Dlg(CWnd* pParent = NULL);	// standard constructor
+    ~Ct1Dlg();
 
 // Dialog Data
 	enum { IDD = IDD_T1_DIALOG, IDH = IDR_HTML_T1_DIALOG };

@@ -23,3 +23,8 @@ private:
     bool m_captchaWorking;
 };
 
+
+namespace logger
+{
+    void log(CString msg);
+}

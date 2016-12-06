@@ -46,6 +46,7 @@ bool StaticImageCtrl::setVisible(int seconds, CStatic* cWnd)
         m_pCStatic_A = cWnd;
         m_captchaWorking = true;
         m_pCStatic_A->ShowWindow(SW_SHOW);
+        logger::log(_T("验证码放大倒计时开始 ..."));
     }
     return true;
 }
@@ -61,6 +62,7 @@ bool StaticImageCtrl::setInvisibleIfTimeIsup()
         {
             m_pCStatic_A->ShowWindow(SW_HIDE);
             m_pCStatic_A = nullptr;
+            logger::log(_T("验证码放大功能结束 ..."));
         }
         
         m_timerWorking = false;
@@ -68,4 +70,34 @@ bool StaticImageCtrl::setInvisibleIfTimeIsup()
         return true;
     }
     return false;
+}
+
+
+namespace logger
+{
+    void log(CString msg)
+    {
+        try
+        {
+            //设置文件的打开参数
+            LPCTSTR logName(_T("log.txt"));
+            CStdioFile outFile(logName, CFile::modeNoTruncate | CFile::modeCreate | CFile::modeWrite | CFile::typeText);
+            CString msLine;
+            CTime tt = CTime::GetCurrentTime();
+
+            //作为Log文件，经常要给每条Log打时间戳，时间格式可自由定义，
+            //这里的格式如：2010-June-10 Thursday, 15:58:12
+            msLine = tt.Format("[%Y-%B-%d %A, %H:%M:%S] ") + msg;
+            msLine += "/n";
+
+            //在文件末尾插入新纪录
+            outFile.SeekToEnd();
+            outFile.WriteString(msLine);
+            outFile.Close();
+        }
+        catch (CFileException *fx)
+        {
+            fx->Delete();
+        }
+    }
 }
