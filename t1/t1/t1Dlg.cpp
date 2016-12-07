@@ -726,8 +726,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
                 m_useIntelligenceBid = true;
 
-                CString log(_T("启动策略出价 ..."));
-                log.Format(_T("出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, _ttoi(strCBText)));
+                CString log;
+                log.Format(_T("启动策略出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, _ttoi(strCBText)));
                 logger::log(log);
             }
             else
@@ -735,8 +735,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 const int intelligencePrice = prc::getIntelligencePrice(m_timeDiff);
                 m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
 
-                CString log(_T("启动智能出价 ..."));
-                log.Format(_T("出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
+                CString log;
+                log.Format(_T("启动智能出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
                 logger::log(log);
             }
             
@@ -753,7 +753,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             editorMy.GetWindowText(strURL);
             m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
 
-            CString log(_T("访问用户指向网址："));
+            CString log(CString("访问用户指向网址："));
             log += strURL;
             logger::log(log);
         }
