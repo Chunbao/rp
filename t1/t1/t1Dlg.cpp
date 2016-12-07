@@ -235,12 +235,12 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
 
-    logger::log1(_T("启动程序 ..."));
+    logger::log(CString("启动程序 ..."));
 }
 
 Ct1Dlg::~Ct1Dlg()
 {
-    logger::log(_T("退出程序 ..."));
+    logger::log(CString("退出程序 ..."));
 }
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
@@ -583,7 +583,7 @@ void Ct1Dlg::performTimeRecognition()
                 m_timeDiff = -1; // This big change case should never happen in theory. Set 1 milliseconds just in case
             }
 
-            logger::log(_T("校准国拍服务器时间 ..."));
+            logger::log(CString("校准国拍服务器时间 ..."));
 
 			CString coordinates;
 			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
@@ -635,7 +635,7 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
             if (preview)
             {
                 ipt::keyboardSendKey(VK_ESCAPE);
-                logger::log(_T("验证码预览结束 ..."));
+                logger::log(CString("验证码预览结束 ..."));
             }
         }
     }
@@ -680,7 +680,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         else if (pMsg->wParam == VK_F5)
         {
             m_pBrowserMy.Refresh();
-            logger::log(_T("网页刷新 ..."));
+            logger::log(CString("网页刷新 ..."));
         }
         else if (pMsg->wParam == VK_F4)
         {
@@ -708,7 +708,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             // simplified error handling
             if (m_stateMachine != STATE_NONE)
             {
-                logger::log(_T("工作流处于非初始状态无法强制启动 ..."));
+                logger::log(CString("工作流处于非初始状态无法强制启动 ..."));
                 return true;
             }
 
@@ -765,7 +765,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             {
                 time(&m_workFlowTimer);
                 m_stateMachine = STATE_PRICE_SEND;
-                logger::log(_T("电脑接管 等待出价时机..."));
+                logger::log(CString("电脑接管 等待出价时机..."));
             }
         }
         else if (pMsg->wParam == VK_ESCAPE)
@@ -789,7 +789,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                     }
                 }
                 m_stateMachine = STATE_NONE;
-                logger::log(_T("恢复工作流初始状态..."));
+                logger::log(CString("恢复工作流初始状态..."));
             }
             
             //Find any cancel click, or find ok to click
@@ -867,7 +867,7 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     ipt::leftButtonClick(rect.left + CAPTCHA_INPUT.x, rect.top + CAPTCHA_INPUT.y);
                     //click back to input
-                    logger::log(_T("验证码已刷新..."));
+                    logger::log(CString("验证码已刷新..."));
                 }
                 else
                 {
@@ -952,7 +952,7 @@ void Ct1Dlg::automateWorkFlow() {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
                     
-                    logger::log(_T("已获取出价返回结果"));
+                    logger::log(CString("已获取出价返回结果"));
                 }
                 time(&m_workFlowTimer);
             }
