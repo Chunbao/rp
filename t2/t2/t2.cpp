@@ -95,43 +95,31 @@ class HttpServer
 public:
     HttpServer()
     : serverHost("guopai.duapp.com")
+    , pathKey("/tqz0T0g5i03Vudm97UDhqx3a187U02t7084Wm310zX20BB2Fy2F1dKDv7F79YJ394545II9T4p7dp5D4QjmSa4tG775C3AXG5B623g8l6Jl1191sm3sn5x9lAi348dXp")
     {
-    
     }
     
+    std::string getKey()
+    {
+        return getAnswer(pathKey);
+    }
+
     std::string getAnswer(std::string path)
     {
         std::string page = loadPage(path);
-        //filter page
-        // sucess return answer
-        // fail return std::string();
-        std::vector<std::string> lines = split(page, "\r\n");
-        std::string keyWord = page.erase(0, 1) + "===";
-        for (UINT i = 0; i < lines.size(); ++i)
+
+        std::cout << page << std::endl;
+        std::string keyWord = path.erase(0, 1) + "===";
+        std::string::size_type n = page.find(keyWord);
+        if (n != std::string::npos)
         {
-            
+            std::string ret = page.substr(n + keyWord.length());
+            return ret;
         }
-        //return loadPage(path);
+        return std::string();
     }
 
 private:
-
-
-    void split(const std::string &s, char delim, std::vector<std::string> &elems) {
-        std::stringstream ss;
-        ss.str(s);
-        std::string item;
-        while (std::getline(ss, item, delim)) {
-            elems.push_back(item);
-        }
-    }
-    
-    std::vector<std::string> split(const std::string &s, char delim) {
-        std::vector<std::string> elems;
-        split(s, delim, elems);
-        return elems;
-    }
-
     std::string loadPage(std::string uriPath)
     {
         WSADATA wsaData;
@@ -174,15 +162,16 @@ private:
         return std::string(buffer);
     }
     
-    std::string serverHost;    
+    const std::string serverHost;
+    const std::string pathKey;
 };
 
 int main ()
 {
     HttpServer server;
-    ;
+    std::string a = server.getKey();
     std::cout << "Raw data" << std::endl;
-    std::cout << server.getAnswer("/test ") << std::endl;
+    std::cout << a << std::endl;
     system("pause");
     return 0;
 }
