@@ -66,7 +66,7 @@ const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
 
 //const int PREDICT_ADD_PRICE = 300;
 const int INPUT_PRICE_DELAY = 1; //1 second
-const int PERFORM_SEND_PRICE_POINT = 300 + 100;
+const int PERFORM_SEND_PRICE_POINT = 300;
 
 //@todo, need to be replaced for compatiable problems
 //@todo, use getWindowRect instead of getClientRect in Image
@@ -245,16 +245,17 @@ Ct1Dlg::~Ct1Dlg()
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDHtmlDialog::DoDataExchange(pDX);
-    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
-    DDX_Control(pDX, IDC_EDIT1, editorMy);
-    DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
-    DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
-    DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
-    DDX_Control(pDX, IDC_COMBO3, m_webMode);
-    DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
-    DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
-    DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
+	CDHtmlDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+	DDX_Control(pDX, IDC_EDIT1, editorMy);
+	DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
+	DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
+	DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
+	DDX_Control(pDX, IDC_COMBO3, m_webMode);
+	DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
+	DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
+	DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
+	DDX_Control(pDX, IDC_COMBO_SEND, m_sendPriceAdd);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
@@ -316,6 +317,7 @@ BOOL Ct1Dlg::OnInitDialog()
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 
+	m_confirmPriceSeconds.AddString(_T("41s"));
     m_confirmPriceSeconds.AddString(_T("42s"));
     m_confirmPriceSeconds.AddString(_T("43s"));
     m_confirmPriceSeconds.AddString(_T("44s"));
@@ -325,7 +327,54 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceSeconds.AddString(_T("48s"));
     m_confirmPriceSeconds.AddString(_T("49s"));
     m_confirmPriceSeconds.AddString(_T("50s"));
-    m_confirmPriceSeconds.SetCurSel(3);
+
+	m_confirmPriceSeconds.AddString(_T("40s"));
+	m_confirmPriceSeconds.AddString(_T("39s"));
+	m_confirmPriceSeconds.AddString(_T("38s"));
+	m_confirmPriceSeconds.AddString(_T("37s"));
+	m_confirmPriceSeconds.AddString(_T("36s"));
+	m_confirmPriceSeconds.AddString(_T("35s"));
+	m_confirmPriceSeconds.AddString(_T("34s"));
+	m_confirmPriceSeconds.AddString(_T("33s"));
+	m_confirmPriceSeconds.AddString(_T("32s"));
+	m_confirmPriceSeconds.AddString(_T("32s"));
+	m_confirmPriceSeconds.AddString(_T("31s"));
+	m_confirmPriceSeconds.AddString(_T("30s"));
+
+	m_confirmPriceSeconds.AddString(_T("29s"));
+	m_confirmPriceSeconds.AddString(_T("28s"));
+	m_confirmPriceSeconds.AddString(_T("27s"));
+	m_confirmPriceSeconds.AddString(_T("26s"));
+	m_confirmPriceSeconds.AddString(_T("25s"));
+	m_confirmPriceSeconds.AddString(_T("24s"));
+	m_confirmPriceSeconds.AddString(_T("23s"));
+	m_confirmPriceSeconds.AddString(_T("22s"));
+	m_confirmPriceSeconds.AddString(_T("21s"));
+	m_confirmPriceSeconds.AddString(_T("20s"));
+
+	m_confirmPriceSeconds.AddString(_T("19s"));
+	m_confirmPriceSeconds.AddString(_T("18s"));
+	m_confirmPriceSeconds.AddString(_T("17s"));
+	m_confirmPriceSeconds.AddString(_T("16s"));
+	m_confirmPriceSeconds.AddString(_T("15s"));
+	m_confirmPriceSeconds.AddString(_T("14s"));
+	m_confirmPriceSeconds.AddString(_T("13s"));
+	m_confirmPriceSeconds.AddString(_T("12s"));
+	m_confirmPriceSeconds.AddString(_T("11s"));
+	m_confirmPriceSeconds.AddString(_T("10s"));
+
+	m_confirmPriceSeconds.AddString(_T("9s"));
+	m_confirmPriceSeconds.AddString(_T("8s"));
+	m_confirmPriceSeconds.AddString(_T("7s"));
+	m_confirmPriceSeconds.AddString(_T("6s"));
+	m_confirmPriceSeconds.AddString(_T("5s"));
+	m_confirmPriceSeconds.AddString(_T("4s"));
+	m_confirmPriceSeconds.AddString(_T("3s"));
+	m_confirmPriceSeconds.AddString(_T("2s"));
+	m_confirmPriceSeconds.AddString(_T("1s"));
+
+
+    m_confirmPriceSeconds.SetCurSel(4);
 
     m_confirmPriceAdd.AddString(_T("400"));
     m_confirmPriceAdd.AddString(_T("500"));
@@ -897,7 +946,12 @@ void Ct1Dlg::automateWorkFlow() {
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
-            const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT);
+			const int seletion = m_sendPriceAdd.GetCurSel();
+			CString money;
+			m_sendPriceAdd.GetLBText(seletion, money);
+			const int sendMoneyAdded = _ttoi(money);
+
+			const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT + sendMoneyAdded);
             const int nIndex = m_forceSendPriceTime.GetCurSel();
             CString strSecond;
             m_forceSendPriceTime.GetLBText(nIndex, strSecond);

@@ -125,4 +125,6 @@ public:
     afx_msg void OnCbnSelchangeComboMode();
     CButton m_captchaEnlarge;
     CButton m_captchaPreview;
+	// // Click Send price button when money arriving @yuan
+	CComboBox m_sendPriceAdd;
 };

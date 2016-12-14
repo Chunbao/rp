@@ -25,6 +25,7 @@
 #define IDC_COMBO3                      1011
 #define IDC_STATIC_PIC                  1012
 #define IDC_CHECK_CAPTCHA_PREVIEW       1013
+#define IDC_COMBO_SEND                  1014
 
 // Next default values for new objects
 // 
