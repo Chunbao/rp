@@ -317,16 +317,16 @@ BOOL Ct1Dlg::OnInitDialog()
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 
-	m_confirmPriceSeconds.AddString(_T("41s"));
-    m_confirmPriceSeconds.AddString(_T("42s"));
-    m_confirmPriceSeconds.AddString(_T("43s"));
-    m_confirmPriceSeconds.AddString(_T("44s"));
-    m_confirmPriceSeconds.AddString(_T("45s"));
-    m_confirmPriceSeconds.AddString(_T("46s"));
-    m_confirmPriceSeconds.AddString(_T("47s"));
-    m_confirmPriceSeconds.AddString(_T("48s"));
+	m_confirmPriceSeconds.AddString(_T("50s"));
     m_confirmPriceSeconds.AddString(_T("49s"));
-    m_confirmPriceSeconds.AddString(_T("50s"));
+    m_confirmPriceSeconds.AddString(_T("48s"));
+    m_confirmPriceSeconds.AddString(_T("47s"));
+    m_confirmPriceSeconds.AddString(_T("46s"));
+    m_confirmPriceSeconds.AddString(_T("45s"));
+    m_confirmPriceSeconds.AddString(_T("44s"));
+    m_confirmPriceSeconds.AddString(_T("43s"));
+    m_confirmPriceSeconds.AddString(_T("42s"));
+    m_confirmPriceSeconds.AddString(_T("41s"));
 
 	m_confirmPriceSeconds.AddString(_T("40s"));
 	m_confirmPriceSeconds.AddString(_T("39s"));
@@ -374,7 +374,7 @@ BOOL Ct1Dlg::OnInitDialog()
 	m_confirmPriceSeconds.AddString(_T("1s"));
 
 
-    m_confirmPriceSeconds.SetCurSel(4);
+    m_confirmPriceSeconds.SetCurSel(5);
 
     m_confirmPriceAdd.AddString(_T("400"));
     m_confirmPriceAdd.AddString(_T("500"));
@@ -385,7 +385,7 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceAdd.AddString(_T("1000"));
     m_confirmPriceAdd.AddString(_T("1100"));
     m_confirmPriceAdd.AddString(_T("1200"));
-    m_confirmPriceAdd.SetCurSel(6);
+    m_confirmPriceAdd.SetCurSel(6); //1000
 
     //TBD
     //m_webMode.AddString(_T("仿真"));
@@ -396,12 +396,14 @@ BOOL Ct1Dlg::OnInitDialog()
 
     m_forceSendPriceTime.SetCurSel(0);
 
+    m_sendPriceAdd.SetCurSel(1);
+
     //int nIndex = m_cbExample.GetCurSel();
     //CString strCBText;
     //m_cbExample.GetLBText(nIndex, strCBText);
 
     //@todo, read local file to check if it is registered
-	editorMy.SetWindowText(_T("Hello world..."));
+	editorMy.SetWindowText(_T("Input URL...F7"));
     CEdit infoPanelEditor;
 
     //CString strURL("http://www.baidu.com");
@@ -633,10 +635,11 @@ void Ct1Dlg::performTimeRecognition()
             }
 
             logger::log(CString("校准国拍服务器时间 ..."));
-
+#if 0
 			CString coordinates;
 			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
 			editorMy.SetWindowText(coordinates);
+#endif
 		}
 	}
 }
@@ -719,11 +722,12 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 ENHANCED_AREA_BEFORE);
             img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
             std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
-
+#if 0
             // ... @todo
             CString coordinates;
             coordinates.Format(_T("%s"), CString(time.c_str()));
             editorMy.SetWindowText(coordinates);
+#endif
 
         }
         else if (pMsg->wParam == VK_F5)
