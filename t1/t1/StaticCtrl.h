@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <Windows.h>
+#include <string>
 
 class StaticImageCtrl
 {
@@ -27,4 +28,24 @@ private:
 namespace logger
 {
     void log(CString msg);
+}
+
+namespace net
+{
+    class HttpServer
+    {
+    public:
+        HttpServer();
+
+        bool HttpServer::connectServer();
+        bool matchKey();
+        std::string getAnswer(std::string path);
+
+    private:
+        std::string loadPage(std::string uriPath);
+
+        const std::string serverHost;
+        const std::string pathKey;
+        const std::string pathAnswer;
+    };
 }

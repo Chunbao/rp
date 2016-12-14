@@ -97,3 +97,123 @@ namespace logger
         }
     }
 }
+
+namespace net
+{
+    HttpServer::HttpServer()
+        : serverHost("guopai.duapp.com")
+        , pathKey("/tqz0T0g5i03Vudm97UDhqx3a187U02t7084Wm310zX20BB2Fy2F1dKDv7F79YJ394545II9T4p7dp5D4QjmSa4tG775C3AXG5B623g8l6Jl1191sm3sn5x9lAi348dXp")
+        , pathAnswer("69866i1a956r1K0Su7169Z98464z60683157w67nsg2L201y9og4c991Rj4B0HRw")
+    {
+    }
+
+    bool HttpServer::connectServer()
+    {
+        try {
+            getAnswer(pathKey);
+        }
+        catch (const std::exception& e)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool HttpServer::matchKey()
+    {
+        std::string answer;
+        try {
+            answer == getAnswer(pathKey);
+        }
+        catch (const std::exception& e)
+        {
+            return false;
+        }
+        return pathAnswer == getAnswer(pathKey);
+    }
+
+    // Removes "key===
+    // and Removes newline characters "\t" and "\n"
+    std::string HttpServer::getAnswer(std::string path)
+    {
+        std::string page = loadPage(path);
+
+        std::string keyWord = path.erase(0, 1) + "===";
+        std::string::size_type n = page.find(keyWord);
+        if (n != std::string::npos)
+        {
+            // Removes "key===
+            std::string ret = page.substr(n + keyWord.length());
+
+            // Removes newline characters "\t" and "\n"
+            std::string::size_type pos = 0;
+            while (pos < ret.length()) {
+                pos = ret.find('\n');
+                if (pos == std::string::npos) {
+                    break;
+                }
+                ret.erase(pos);
+            }
+            pos = 0;
+            while (pos < ret.length()) {
+                pos = ret.find('\r');
+                if (pos == std::string::npos) {
+                    break;
+                }
+                ret.erase(pos);
+            }
+
+            return ret;
+        }
+        return std::string();
+    }
+
+    // Support only page size smaller than 10000, otherwise process the last one
+    std::string HttpServer::loadPage(std::string uriPath)
+    {
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            //cout << "WSAStartup failed.\n";
+            //system("pause");
+            return std::string();
+        }
+        SOCKET Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        struct hostent *host;
+        host = gethostbyname(serverHost.c_str());
+        if (!host)
+        {
+            throw std::exception("e");
+        }
+
+        SOCKADDR_IN SockAddr;
+        SockAddr.sin_port = htons(80);
+        SockAddr.sin_family = AF_INET;
+        SockAddr.sin_addr.s_addr = *((unsigned long*)host->h_addr);
+        //cout << "Connecting...\n";
+        if (connect(Socket, (SOCKADDR*)(&SockAddr), sizeof(SockAddr)) != 0) {
+            //cout << "Could not connect";
+            //system("pause");
+            return std::string();
+        }
+        //cout << "Connected.\n";
+        //const std::string uriPath("/test ");
+        const std::string httpRequest = "GET " + uriPath
+            + " HTTP/1.1\r\nHost: "
+            + serverHost
+            + "\r\nConnection: close\r\n\r\n";
+        send(Socket, httpRequest.c_str(), httpRequest.length(), 0);
+        char buffer[10000];
+        int nDataLength;
+        while ((nDataLength = recv(Socket, buffer, 10000, 0)) > 0) {
+            /*int i = 0;
+            while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
+            cout << buffer[i];
+            i += 1;
+            }*/
+        }
+        closesocket(Socket);
+        WSACleanup();
+        return std::string(buffer);
+    }
+
+}

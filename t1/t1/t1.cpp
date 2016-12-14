@@ -6,6 +6,7 @@
 #include "t1.h"
 #include "t1Dlg.h"
 #include "CWebBrowser2.h"
+#include "StaticCtrl.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,6 +64,37 @@ BOOL Ct1App::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
+    //net::HttpServer server;
+    //if (!server.connectServer())
+    //{
+    //    MessageBox(
+    //        NULL,
+    //        (LPCWSTR)L"链接服务器异常\n程序即将退出",
+    //        (LPCWSTR)L"授权信息！",
+    //        MB_ICONERROR | MB_OK
+    //        );
+    //    return false;
+    //}
+/*
+    if (!server.matchKey())
+    {
+        MessageBox(
+            NULL,
+            (LPCWSTR)L"服务器验证未通过\n程序即将退出",
+            (LPCWSTR)L"授权信息！",
+            MB_ICONERROR | MB_OK
+            );
+        return false;
+    }
+    else {
+        MessageBox(
+            NULL,
+            (LPCWSTR)L"授权验证通过\n程序即将启动...",
+            (LPCWSTR)L"授权信息！",
+            MB_ICONINFORMATION | MB_OK
+            );
+    }
+*/
 	Ct1Dlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
