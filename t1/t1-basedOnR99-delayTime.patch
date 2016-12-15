@@ -1,0 +1,278 @@
+Index: t1/ImgUtil.cpp
+===================================================================
+--- t1/ImgUtil.cpp	(revision 99)
++++ t1/ImgUtil.cpp	(working copy)
+@@ -1300,7 +1300,8 @@
+         time_t timetThen = mktime(&then_tm);
+         std::chrono::time_point<std::chrono::system_clock>
+             then_tp = std::chrono::system_clock::from_time_t(timetThen);
+-        std::chrono::system_clock::time_point server = std::chrono::system_clock::now()
++        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
++        std::chrono::system_clock::time_point server = now
+             - std::chrono::milliseconds(timeDiff);
+ 
+         long long timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(then_tp - server).count();
+Index: t1/resource.h
+===================================================================
+--- t1/resource.h	(revision 96)
++++ t1/resource.h	(working copy)
+@@ -26,6 +26,8 @@
+ #define IDC_STATIC_PIC                  1012
+ #define IDC_CHECK_CAPTCHA_PREVIEW       1013
+ #define IDC_COMBO_SEND                  1014
++#define IDC_COMBO_SEND2                 1016
++#define IDC_COMBO_DELAY                 1016
+ 
+ // Next default values for new objects
+ // 
+Index: t1/StaticCtrl.cpp
+===================================================================
+--- t1/StaticCtrl.cpp	(revision 96)
++++ t1/StaticCtrl.cpp	(working copy)
+@@ -4,6 +4,7 @@
+ #include <fstream>
+ 
+ StaticImageCtrl::StaticImageCtrl(CWnd* cWnd, HBITMAP hBitMap)
++    : m_delayFlag(false)
+ {
+     m_pCStatic_A = new CStatic;
+     m_pCStatic_A->Create(_T("A bitmap static control (A)"),
+@@ -18,6 +19,7 @@
+     : m_pCStatic_A(nullptr)
+     , m_timerWorking(false)
+     , m_captchaWorking(false)
++    , m_delayFlag(false)
+ {
+ }
+ 
+Index: t1/StaticCtrl.h
+===================================================================
+--- t1/StaticCtrl.h	(revision 96)
++++ t1/StaticCtrl.h	(working copy)
+@@ -15,6 +15,10 @@
+     bool setVisible(int seconds, CStatic* cWnd = nullptr);
+     bool setInvisibleIfTimeIsup();
+ 
++    //Remember time after delaying
++    std::chrono::system_clock::time_point m_timeAfterDelay;
++    bool m_delayFlag;
++
+ private:
+     std::chrono::high_resolution_clock::time_point m_startVisible;
+     int m_visibleSeconds;
+Index: t1/t1.rc
+===================================================================
+--- t1/t1.rc	(revision 97)
++++ t1/t1.rc	(working copy)
+@@ -44,22 +44,24 @@
+ CAPTION "拍牌助手"
+ FONT 8, "MS Shell Dlg", 0, 0, 0x1
+ BEGIN
+-    CONTROL         "",IDC_STATIC_PIC,"Static",SS_BITMAP | NOT WS_VISIBLE,58,0,20,20
++    CONTROL         "",IDC_STATIC_PIC,"Static",SS_BITMAP | NOT WS_VISIBLE,431,1,15,13
+     PUSHBUTTON      "刷新(F5)",IDC_BUTTON_Refresh,7,0,44,14
+-    EDITTEXT        IDC_EDIT1,80,0,68,14,ES_AUTOHSCROLL
+-    EDITTEXT        IDC_EDIT2,191,0,52,14,ES_AUTOHSCROLL
+-    COMBOBOX        IDC_COMBO1,442,0,35,66,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+-    COMBOBOX        IDC_COMBO2,391,1,29,75,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+-    LTEXT           "出价点",IDC_STATIC,365,3,25,8,SS_CENTERIMAGE
+-    LTEXT           "加价",IDC_STATIC,425,3,17,8,SS_CENTERIMAGE
++    EDITTEXT        IDC_EDIT1,53,0,68,14,ES_AUTOHSCROLL
++    EDITTEXT        IDC_EDIT2,164,0,52,14,ES_AUTOHSCROLL
++    COMBOBOX        IDC_COMBO1,389,0,35,66,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
++    COMBOBOX        IDC_COMBO2,338,0,29,75,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
++    LTEXT           "出价点",IDC_STATIC,312,3,25,8,SS_CENTERIMAGE
++    LTEXT           "加价",IDC_STATIC,372,3,17,8,SS_CENTERIMAGE
+     CONTROL         "",IDC_EXPLORER1,"{8856F961-340A-11D0-A96B-00C04FD705A2}",WS_TABSTOP,7,14,611,444
+-    COMBOBOX        IDC_COMBO3,152,0,34,42,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+-    CONTROL         "验证码放大",IDC_CHECK_CAPTCHA_ENLARGE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,266,2,52,10,WS_EX_RIGHT
+-    CONTROL         "预览",IDC_CHECK_CAPTCHA_PREVIEW,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,324,2,26,10,WS_EX_RIGHT
+-    COMBOBOX        IDC_COMBO4,589,0,28,66,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+-    LTEXT           "强出提前",IDC_STATIC,557,3,33,8,SS_CENTERIMAGE
+-    COMBOBOX        IDC_COMBO_SEND,522,0,30,37,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+-    LTEXT           "提前",IDC_STATIC,504,3,17,8,SS_CENTERIMAGE
++    COMBOBOX        IDC_COMBO3,125,0,34,42,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
++    CONTROL         "验证码放大",IDC_CHECK_CAPTCHA_ENLARGE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,223,2,52,10,WS_EX_RIGHT
++    CONTROL         "预览",IDC_CHECK_CAPTCHA_PREVIEW,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,282,2,26,10,WS_EX_RIGHT
++    COMBOBOX        IDC_COMBO4,586,0,31,66,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
++    LTEXT           "强出提前",IDC_STATIC,554,3,31,8,SS_CENTERIMAGE
++    COMBOBOX        IDC_COMBO_SEND,468,0,30,38,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
++    LTEXT           "提前",IDC_STATIC,451,3,17,8,SS_CENTERIMAGE
++    COMBOBOX        IDC_COMBO_DELAY,519,0,30,64,CBS_DROPDOWN | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
++    LTEXT           "延时",IDC_STATIC,501,3,17,8,SS_CENTERIMAGE
+ END
+ 
+ 
+@@ -152,6 +154,26 @@
+ 0x3031, 0x0030, 
+     IDC_COMBO_SEND, 0x403, 4, 0
+ 0x3032, 0x0030, 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7330, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7331, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7332, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7333, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7334, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7335, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7336, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7337, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7338, "\000" 
++    IDC_COMBO_DELAY, 0x403, 5, 0
++0x2e30, 0x7339, "\000" 
+     0
+ END
+ 
+Index: t1/t1Dlg.cpp
+===================================================================
+--- t1/t1Dlg.cpp	(revision 99)
++++ t1/t1Dlg.cpp	(working copy)
+@@ -245,17 +245,18 @@
+ 
+ void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
+ {
+-	CDHtmlDialog::DoDataExchange(pDX);
+-	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+-	DDX_Control(pDX, IDC_EDIT1, editorMy);
+-	DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
+-	DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
+-	DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
+-	DDX_Control(pDX, IDC_COMBO3, m_webMode);
+-	DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
+-	DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
+-	DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
+-	DDX_Control(pDX, IDC_COMBO_SEND, m_sendPriceAdd);
++    CDHtmlDialog::DoDataExchange(pDX);
++    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
++    DDX_Control(pDX, IDC_EDIT1, editorMy);
++    DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
++    DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
++    DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
++    DDX_Control(pDX, IDC_COMBO3, m_webMode);
++    DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
++    DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
++    DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
++    DDX_Control(pDX, IDC_COMBO_SEND, m_sendPriceAdd);
++    DDX_Control(pDX, IDC_COMBO_DELAY, m_sendPriceDelay);
+ }
+ 
+ BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
+@@ -397,6 +398,7 @@
+     m_forceSendPriceTime.SetCurSel(0);
+ 
+     m_sendPriceAdd.SetCurSel(1);
++    m_sendPriceDelay.SetCurSel(0);
+ 
+     //int nIndex = m_cbExample.GetCurSel();
+     //CString strCBText;
+@@ -950,19 +952,7 @@
+         }
+         else if (m_stateMachine == STATE_PRICE_SEND)
+         {
+-			const int seletion = m_sendPriceAdd.GetCurSel();
+-			CString money;
+-			m_sendPriceAdd.GetLBText(seletion, money);
+-			const int sendMoneyAdded = _ttoi(money);
+-
+-			const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT + sendMoneyAdded);
+-            const int nIndex = m_forceSendPriceTime.GetCurSel();
+-            CString strSecond;
+-            m_forceSendPriceTime.GetLBText(nIndex, strSecond);
+-            const float seconds = _ttof(strSecond);
+-
+-            const bool deadlineArrived = (utl::timeLeftInMilliseconds(m_timeDiff) < (long long)seconds * 1000);
+-            if (acceptedPriceRange || deadlineArrived)
++            if (ifPressSend())
+             {
+                 RECT rect;
+                 GetWindowRect(&rect);
+@@ -982,15 +972,6 @@
+ 
+                 CString log;
+                 log.Format(_T("正在出价 ... 国拍服务器当前价格：%d 最终出价：%d 出价原因：", m_bidPrice, m_bidUserFinalPrice));
+-                if (acceptedPriceRange)
+-                {
+-                    log += _T("已进入出价区间（100余量）");
+-                }
+-                if (deadlineArrived)
+-                {
+-                    log += _T("临近出价截止时间还有 %ll毫秒", utl::timeLeftInMilliseconds(m_timeDiff));
+-                }
+-                //log = _T("正在出价 ") + log;
+                 logger::log(log);
+             }
+         }
+@@ -1019,7 +1000,48 @@
+ 
+ }
+ 
++bool Ct1Dlg::ifPressSend()
++{
++    bool userTargetArrived = false;
++    if (!staticImageCtrl.m_delayFlag)
++    {
++        const int seletion = m_sendPriceAdd.GetCurSel();
++        CString money;
++        m_sendPriceAdd.GetLBText(seletion, money);
++        const int sendMoneyAdded = _ttoi(money);
++        const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT + sendMoneyAdded);
++        if (acceptedPriceRange)
++        {
++            const int delay = m_sendPriceDelay.GetCurSel();
++            CString time;
++            m_sendPriceDelay.GetLBText(delay, time);
++            const float sendTimeDelay = _ttof(time);
++            std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
++            std::chrono::system_clock::time_point timeAfterDelay = now + std::chrono::milliseconds((long long)sendTimeDelay * 10000);
+ 
++            staticImageCtrl.m_timeAfterDelay = timeAfterDelay;
++            staticImageCtrl.m_delayFlag = true;
++        }
++    }
++    else
++    {
++        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
++        if (staticImageCtrl.m_timeAfterDelay <= now)
++        {
++            userTargetArrived = true;
++        }
++    }
++
++    const int nIndex = m_forceSendPriceTime.GetCurSel();
++    CString strSecond;
++    m_forceSendPriceTime.GetLBText(nIndex, strSecond);
++    const float seconds = _ttof(strSecond);
++    const bool deadlineArrived = (utl::timeLeftInMilliseconds(m_timeDiff) < (long long)seconds * 1000);
++
++    return userTargetArrived || deadlineArrived;
++}
++
++
+ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
+ {
+ #if defined _WIN32 || defined _WIN64
+Index: t1/t1Dlg.h
+===================================================================
+--- t1/t1Dlg.h	(revision 96)
++++ t1/t1Dlg.h	(working copy)
+@@ -61,6 +61,7 @@
+ private:
+     bool manageUserEvent(MSG* pMsg);
+     void automateWorkFlow();
++    bool ifPressSend();
+ 
+     std::string captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
+     std::string captureEnhancedText(std::string enhancedFile);
+@@ -127,4 +128,5 @@
+     CButton m_captchaPreview;
+ 	// // Click Send price button when money arriving @yuan
+ 	CComboBox m_sendPriceAdd;
++    CComboBox m_sendPriceDelay;
+ };
