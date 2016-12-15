@@ -58,8 +58,8 @@ const int RELATIVE_BOTTOM_TIME = 469;
 const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
 const cv::Point PRICE_CONFIRM(824, 482);
 
-const cv::Point CAPTCHA_ENLARGE_AREA_LEFT(517, 438);
-const cv::Point CAPTCHA_ENLARGE_AREA_RIGHT(118, 55);
+const cv::Point CAPTCHA_ENLARGE_AREA_LEFT(524 - 7/*border width*/, 468 - 30/*header height*/);
+const cv::Point CAPTCHA_ENLARGE_AREA_RIGHT(113, 50);
 const cv::Point CAPTCHA_INPUT(818, 478);
 
 const cv::Point REQUEST_TOO_OFTEN_BACKUP(690, 543);
@@ -661,8 +661,8 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
         /*m_image = new StaticImageCtrl(this, hBitMap);
         m_image->setVisible(8);*/
         CStatic* pWnd = (CStatic*)GetDlgItem(IDC_STATIC_PIC);
-        pWnd->MoveWindow(CAPTCHA_ENLARGE_AREA_LEFT.x - 50, 
-                         CAPTCHA_ENLARGE_AREA_LEFT.y - 25, 
+        pWnd->MoveWindow(CAPTCHA_ENLARGE_AREA_LEFT.x - 50 - 40/*40 make the image moves upwards*/,
+                         CAPTCHA_ENLARGE_AREA_LEFT.y - 25 - 130 /*130 make the image moves upwards*/, 
                          CAPTCHA_ENLARGE_AREA_RIGHT.x * 2, 
                          CAPTCHA_ENLARGE_AREA_RIGHT.y * 2);
         pWnd->SetBitmap(hBitMap);
