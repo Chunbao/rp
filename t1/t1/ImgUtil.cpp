@@ -1339,4 +1339,43 @@ namespace prc
         }
         return ret;
     }
+
+    int getIntelligencePriceBwRelease(long long timeDiff)
+    {
+        int ret(300);
+        std::tm server = utl::getServerTime(timeDiff);
+        const int hour = server.tm_hour;
+        const int min = server.tm_min;
+        const int sec = server.tm_sec;
+        if (hour == 11 && min == 29)
+        {
+            if (sec <= 7)
+                ret = 1500;
+            else if (sec >= 8 && sec <= 27)
+                ret = 1400;
+            else if (sec >= 28 && sec <= 37)
+                ret = 1300; 
+            else if (sec >= 38 && sec <= 40)
+                ret = 1200;
+            else if (sec >= 41 && sec <= 42)
+                ret = 1100;
+            else if (sec >= 43 && sec <= 44)
+                ret = 1000;
+            else if (sec >= 45 && sec <= 46)
+                ret = 900;
+            else if (sec >= 47 && sec <= 48)
+                ret = 800;
+            else if (sec >= 49 && sec <= 51)
+                return 700;
+            else if (sec >= 52 && sec <= 53)
+                return 600;
+            else if (sec >= 54 && sec <= 55)
+                ret = 500;
+            else if (sec >= 56 && sec <= 57)
+                ret = 400;
+            else if (sec >= 58 && sec <= 59)
+                ret = 300;
+        }
+        return ret;
+    }
 }

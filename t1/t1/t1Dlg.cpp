@@ -785,7 +785,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             }
             else
             {
-                const int intelligencePrice = prc::getIntelligencePrice(m_timeDiff);
+                const int intelligencePrice = prc::getIntelligencePriceBwRelease(m_timeDiff);
                 m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
 
                 CString log;

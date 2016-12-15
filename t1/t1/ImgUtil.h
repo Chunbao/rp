@@ -159,4 +159,6 @@ namespace prc
 {
     //price
     int getIntelligencePrice(long long timeDiff);
+
+    int getIntelligencePriceBwRelease(long long timeDiff);
 }
