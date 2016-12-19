@@ -11,6 +11,7 @@
 // Dialogs (IDD_*) 
 #define HIDD_ABOUTBOX                           0x20064
 #define HIDD_T1_DIALOG                          0x20066
+#define HIDD_DIALOG_Strategy                    0x20085
  
 // Frame Controls (IDW_*) 
 // This is a part of the Microsoft Foundation Classes C++ library.

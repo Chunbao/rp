@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "t1.h"
 #include "t1Dlg.h"
+#include "StrategyDlg.h"
 #include "CWebBrowser2.h"
 #include "StaticCtrl.h"
 
@@ -95,6 +96,31 @@ BOOL Ct1App::InitInstance()
             );
     }
 */
+
+	CStrategyDlg* pDialog = new CStrategyDlg;
+	m_pMainWnd = pDialog;
+	BOOL ret = pDialog->Create(CStrategyDlg::IDD);
+	if (!ret)   //Create failed.
+	{
+		AfxMessageBox(_T("Error creating Dialog"));
+	}
+
+	pDialog->ShowWindow(SW_SHOW);
+	pDialog->UpdateWindow();
+
+	//m_mainDialog = std::make_shared<Ct1Dlg>();
+	//ret = m_mainDialog->Create(Ct1Dlg::IDD);
+	//if (!ret)   //Create failed.
+	//{
+	//	AfxMessageBox(_T("Error creating Dialog"));
+	//}
+
+	//m_mainDialog->ShowWindow(SW_SHOW);
+	//m_mainDialog->UpdateWindow();
+
+	return true;
+
+# if 0 // modelless dialog
 	Ct1Dlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -112,6 +138,7 @@ BOOL Ct1App::InitInstance()
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;
+#endif
 }
 
 /*

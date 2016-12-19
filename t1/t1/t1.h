@@ -9,6 +9,9 @@
 #endif
 
 #include "resource.h"		// main symbols
+#include <memory>
+
+class Ct1Dlg;
 
 
 // Ct1App:
@@ -28,6 +31,9 @@ public:
 // Implementation
 
 	DECLARE_MESSAGE_MAP()
+
+private:
+	std::shared_ptr<Ct1Dlg> m_mainDialog;
 };
 
 extern Ct1App theApp;

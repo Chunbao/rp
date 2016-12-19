@@ -478,6 +478,24 @@ HRESULT Ct1Dlg::OnButtonCancel(IHTMLElement* /*pElement*/)
 	return S_OK;
 }
 
+void Ct1Dlg::OnCancel()
+{
+	// CDialog::OnCancel();  // MUST remove this line
+	DestroyWindow();
+}
+
+
+void Ct1Dlg::OnOK()
+{
+	// CDialog::OnOK(); // MUST remove this line
+	DestroyWindow();
+}
+
+void Ct1Dlg::PostNcDestroy()
+{
+	delete this;
+}
+
 HRESULT Ct1Dlg::OnButtonHelp(IHTMLElement* /*pElement*/)
 {
 	OnHelp();
