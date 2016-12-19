@@ -32,6 +32,9 @@ Ct1App::Ct1App()
 	// Place all significant initialization in InitInstance
 }
 
+Ct1App::~Ct1App()
+{
+}
 
 // The one and only Ct1App object
 
@@ -108,15 +111,15 @@ BOOL Ct1App::InitInstance()
 	pDialog->ShowWindow(SW_SHOW);
 	pDialog->UpdateWindow();
 
-	//m_mainDialog = std::make_shared<Ct1Dlg>();
-	//ret = m_mainDialog->Create(Ct1Dlg::IDD);
-	//if (!ret)   //Create failed.
-	//{
-	//	AfxMessageBox(_T("Error creating Dialog"));
-	//}
+	m_mainDialog = std::make_shared<Ct1Dlg>();
+	ret = m_mainDialog->Create(Ct1Dlg::IDD);
+	if (!ret)   //Create failed.
+	{
+		AfxMessageBox(_T("Error creating Dialog"));
+	}
 
-	//m_mainDialog->ShowWindow(SW_SHOW);
-	//m_mainDialog->UpdateWindow();
+	m_mainDialog->ShowWindow(SW_SHOW);
+	m_mainDialog->UpdateWindow();
 
 	return true;
 

@@ -14,6 +14,7 @@ public:
 	void OnCancel();
 	void OnOK();
 	void PostNcDestroy();
+	//https://www.codeproject.com/articles/1651/tutorial-modeless-dialogs-with-mfc
 
 // Dialog Data
 //#ifdef AFX_DESIGN_TIME

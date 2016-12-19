@@ -22,6 +22,7 @@ class Ct1App : public CWinAppEx
 {
 public:
 	Ct1App();
+	~Ct1App();
 
 // Overrides
 	public:
