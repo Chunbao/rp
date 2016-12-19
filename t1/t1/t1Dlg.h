@@ -47,7 +47,7 @@ public:
 	HRESULT OnButtonHelp(IHTMLElement *pElement);
 	void OnCancel();
 	void OnOK();
-	void PostNcDestroy();
+	//void PostNcDestroy();
 
 // Implementation
 protected:

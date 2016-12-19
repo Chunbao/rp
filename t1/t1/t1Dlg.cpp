@@ -491,10 +491,10 @@ void Ct1Dlg::OnOK()
 	DestroyWindow();
 }
 
-void Ct1Dlg::PostNcDestroy()
-{
-	delete this;
-}
+//void Ct1Dlg::PostNcDestroy()
+//{
+//	delete this;
+//}
 
 HRESULT Ct1Dlg::OnButtonHelp(IHTMLElement* /*pElement*/)
 {
