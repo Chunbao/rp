@@ -47,6 +47,9 @@
     <ClCompile Include="StaticCtrl.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="Capture.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CWebBrowser2.h">
@@ -71,6 +74,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StaticCtrl.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Capture.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
