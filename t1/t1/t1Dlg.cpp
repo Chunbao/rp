@@ -1,4 +1,3 @@
-
 // t1Dlg.cpp : implementation file
 //
 
@@ -29,7 +28,6 @@
 #include <windows.h>
 #endif
 
-
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
@@ -53,7 +51,6 @@ const int RELATIVE_LEFT_TIME = 149;
 const int RELATIVE_TOP_TIME = 455;
 const int RELATIVE_RIGHT_TIME = 222;
 const int RELATIVE_BOTTOM_TIME = 469;
-
 
 const cv::Point PRICE_INPUT(754/*right side of input*/, 479);
 const cv::Point PRICE_CONFIRM(824, 482);
@@ -88,7 +85,7 @@ const std::string BUTTON_CANCEL_FILE("..\\t1\\testdata\\cancel.bmp");
 const std::string BUTTON_REFRESH_FILE("..\\t1\\testdata\\refresh.bmp");
 const std::string DIALOG_CAPTURE_TMP("..\\t1\\testdata\\Capture_tmp.bmp");
 /*
-CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp")); 
+CString a1 = utl::getWorkingPath() + CString(_T("ok.bmp"));
 std::string     BUTTON_OK_FILE((LPCTSTR)a1);
 //const cv::Mat   BUTTON_OK_MAT = cv::imread(BUTTON_OK_FILE);
 
@@ -101,46 +98,44 @@ std::string BUTTON_REFRESH_FILE((LPCTSTR)a3);
 //const cv::Mat   BUTTON_REFRESH_MAT = cv::imread(BUTTON_REFRESH_FILE);
 
 CString a4 = utl::getWorkingPath() + CString(_T("Capture_tmp.bmp"));
-std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4); 
+std::string DIALOG_CAPTURE_TMP((LPCTSTR)a4);
 */
 
 // CWnd::BringWindowToTop
 
-
 void GetScreenShot(int absoluteLeft, int absoluteTop, int relativeWidth, int relativeHeight)
 {
-	int x1, y1, x2, y2, w, h;
+    int x1, y1, x2, y2, w, h;
 
-	// get screen dimensions
-	x1 = GetSystemMetrics(SM_XVIRTUALSCREEN);
-	y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
-	x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-	//w = x2 - x1;
-	//h = y2 - y1;
-	w = relativeWidth;
-	h = relativeHeight;
+    // get screen dimensions
+    x1 = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    //w = x2 - x1;
+    //h = y2 - y1;
+    w = relativeWidth;
+    h = relativeHeight;
 
-	// copy screen to bitmap
-	HDC     hScreen = GetDC(NULL);
-	HDC     hDC = CreateCompatibleDC(hScreen);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
-	HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
-	BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, absoluteLeft, absoluteTop, SRCCOPY);
+    // copy screen to bitmap
+    HDC     hScreen = GetDC(NULL);
+    HDC     hDC = CreateCompatibleDC(hScreen);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+    HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
+    BOOL    bRet = BitBlt(hDC, 0, 0, w, h, hScreen, absoluteLeft, absoluteTop, SRCCOPY);
 
-	// save bitmap to clipboard
-	OpenClipboard(NULL);
-	EmptyClipboard();
-	SetClipboardData(CF_BITMAP, hBitmap);
-	CloseClipboard();
+    // save bitmap to clipboard
+    OpenClipboard(NULL);
+    EmptyClipboard();
+    SetClipboardData(CF_BITMAP, hBitmap);
+    CloseClipboard();
 
-	// clean up
-	SelectObject(hDC, old_obj);
-	DeleteDC(hDC);
-	ReleaseDC(NULL, hScreen);
-	DeleteObject(hBitmap);
+    // clean up
+    SelectObject(hDC, old_obj);
+    DeleteDC(hDC);
+    ReleaseDC(NULL, hScreen);
+    DeleteObject(hBitmap);
 }
-
 
 void GetScreenShotDialog(HDC h1) // h1 will be changed
 {
@@ -151,7 +146,7 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     y1 = GetSystemMetrics(SM_YVIRTUALSCREEN);
     x2 = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     y2 = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
+
     RECT rect;
     GetWindowRect(WindowFromDC(h1), &rect);
     //w = x2 - x1;
@@ -180,23 +175,22 @@ void GetScreenShotDialog(HDC h1) // h1 will be changed
     DeleteObject(hBitmap);
 }
 
-
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialog
 {
 public:
-	CAboutDlg();
+    CAboutDlg();
 
 // Dialog Data
-	enum { IDD = IDD_ABOUTBOX };
+    enum { IDD = IDD_ABOUTBOX };
 
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    protected:
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
 protected:
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -205,25 +199,22 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
-
 // Ct1Dlg dialog
 
 BEGIN_DHTML_EVENT_MAP(Ct1Dlg)
-	DHTML_EVENT_ONCLICK(_T("ButtonOK"), OnButtonOK)
-	DHTML_EVENT_ONCLICK(_T("ButtonCancel"), OnButtonCancel)
-	DHTML_EVENT_ONCLICK(_T("ButtonHelp"), OnButtonHelp)
+    DHTML_EVENT_ONCLICK(_T("ButtonOK"), OnButtonOK)
+    DHTML_EVENT_ONCLICK(_T("ButtonCancel"), OnButtonCancel)
+    DHTML_EVENT_ONCLICK(_T("ButtonHelp"), OnButtonHelp)
 END_DHTML_EVENT_MAP()
 
-
-
 Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
-	: CDHtmlDialog(Ct1Dlg::IDD, Ct1Dlg::IDH, pParent)
+    : CDHtmlDialog(Ct1Dlg::IDD, Ct1Dlg::IDH, pParent)
     , m_stateMachine(STATE_NONE)
     , m_bidPrice(0)
     , m_bidUserFinalPrice(0)
@@ -231,9 +222,9 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_useIntelligenceBid(false)
     , m_priceTimer(std::chrono::high_resolution_clock::now())
     , m_okPositionWhenSending(0 , 0)
-	, m_timeDiff(0)
+    , m_timeDiff(0)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
+    m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
 
     logger::log(CString("启动程序 ..."));
 }
@@ -245,59 +236,58 @@ Ct1Dlg::~Ct1Dlg()
 
 void Ct1Dlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDHtmlDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
-	DDX_Control(pDX, IDC_EDIT1, editorMy);
-	DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
-	DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
-	DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
-	DDX_Control(pDX, IDC_COMBO3, m_webMode);
-	DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
-	DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
-	DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
-	DDX_Control(pDX, IDC_COMBO_SEND, m_sendPriceAdd);
+    CDHtmlDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_EXPLORER1, m_pBrowserMy);
+    DDX_Control(pDX, IDC_EDIT1, editorMy);
+    DDX_Control(pDX, IDC_EDIT2, infoPanelEditor);
+    DDX_Control(pDX, IDC_COMBO2, m_confirmPriceSeconds);
+    DDX_Control(pDX, IDC_COMBO1, m_confirmPriceAdd);
+    DDX_Control(pDX, IDC_COMBO3, m_webMode);
+    DDX_Control(pDX, IDC_CHECK_CAPTCHA_ENLARGE, m_captchaEnlarge);
+    DDX_Control(pDX, IDC_CHECK_CAPTCHA_PREVIEW, m_captchaPreview);
+    DDX_Control(pDX, IDC_COMBO4, m_forceSendPriceTime);
+    DDX_Control(pDX, IDC_COMBO_SEND, m_sendPriceAdd);
 }
 
 BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
-	ON_WM_SYSCOMMAND()
-	//}}AFX_MSG_MAP
+    ON_WM_SYSCOMMAND()
+    //}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_Refresh, &Ct1Dlg::OnBnClickedButtonRefresh)
     ON_CBN_SELCHANGE(IDC_COMBO3, &Ct1Dlg::OnCbnSelchangeComboMode)
 END_MESSAGE_MAP()
-
 
 // Ct1Dlg message handlers
 
 BOOL Ct1Dlg::OnInitDialog()
 {
-	CDHtmlDialog::OnInitDialog();
+    CDHtmlDialog::OnInitDialog();
 
-	// Add "About..." menu item to system menu.
+    // Add "About..." menu item to system menu.
 
-	// IDM_ABOUTBOX must be in the system command range.
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	ASSERT(IDM_ABOUTBOX < 0xF000);
+    // IDM_ABOUTBOX must be in the system command range.
+    ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+    ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
+    CMenu* pSysMenu = GetSystemMenu(FALSE);
+    if (pSysMenu != NULL)
+    {
+        BOOL bNameValid;
+        CString strAboutMenu;
+        bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+        ASSERT(bNameValid);
+        if (!strAboutMenu.IsEmpty())
+        {
+            pSysMenu->AppendMenu(MF_SEPARATOR);
+            pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
+        }
+    }
 
-	// Set the icon for this dialog.  The framework does this automatically
-	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+    // Set the icon for this dialog.  The framework does this automatically
+    //  when the application's main window is not a dialog
+    SetIcon(m_hIcon, TRUE);            // Set big icon
+    SetIcon(m_hIcon, FALSE);        // Set small icon
 /*
-	// TODO: Add extra initialization here
+    // TODO: Add extra initialization here
     // Create the control.
     //m_pBrowserMy = new CWebBrowser2;
     //ASSERT (m_pBrowser);
@@ -317,7 +307,7 @@ BOOL Ct1Dlg::OnInitDialog()
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 
-	m_confirmPriceSeconds.AddString(_T("50s"));
+    m_confirmPriceSeconds.AddString(_T("50s"));
     m_confirmPriceSeconds.AddString(_T("49s"));
     m_confirmPriceSeconds.AddString(_T("48s"));
     m_confirmPriceSeconds.AddString(_T("47s"));
@@ -328,51 +318,50 @@ BOOL Ct1Dlg::OnInitDialog()
     m_confirmPriceSeconds.AddString(_T("42s"));
     m_confirmPriceSeconds.AddString(_T("41s"));
 
-	m_confirmPriceSeconds.AddString(_T("40s"));
-	m_confirmPriceSeconds.AddString(_T("39s"));
-	m_confirmPriceSeconds.AddString(_T("38s"));
-	m_confirmPriceSeconds.AddString(_T("37s"));
-	m_confirmPriceSeconds.AddString(_T("36s"));
-	m_confirmPriceSeconds.AddString(_T("35s"));
-	m_confirmPriceSeconds.AddString(_T("34s"));
-	m_confirmPriceSeconds.AddString(_T("33s"));
-	m_confirmPriceSeconds.AddString(_T("32s"));
-	m_confirmPriceSeconds.AddString(_T("32s"));
-	m_confirmPriceSeconds.AddString(_T("31s"));
-	m_confirmPriceSeconds.AddString(_T("30s"));
+    m_confirmPriceSeconds.AddString(_T("40s"));
+    m_confirmPriceSeconds.AddString(_T("39s"));
+    m_confirmPriceSeconds.AddString(_T("38s"));
+    m_confirmPriceSeconds.AddString(_T("37s"));
+    m_confirmPriceSeconds.AddString(_T("36s"));
+    m_confirmPriceSeconds.AddString(_T("35s"));
+    m_confirmPriceSeconds.AddString(_T("34s"));
+    m_confirmPriceSeconds.AddString(_T("33s"));
+    m_confirmPriceSeconds.AddString(_T("32s"));
+    m_confirmPriceSeconds.AddString(_T("32s"));
+    m_confirmPriceSeconds.AddString(_T("31s"));
+    m_confirmPriceSeconds.AddString(_T("30s"));
 
-	m_confirmPriceSeconds.AddString(_T("29s"));
-	m_confirmPriceSeconds.AddString(_T("28s"));
-	m_confirmPriceSeconds.AddString(_T("27s"));
-	m_confirmPriceSeconds.AddString(_T("26s"));
-	m_confirmPriceSeconds.AddString(_T("25s"));
-	m_confirmPriceSeconds.AddString(_T("24s"));
-	m_confirmPriceSeconds.AddString(_T("23s"));
-	m_confirmPriceSeconds.AddString(_T("22s"));
-	m_confirmPriceSeconds.AddString(_T("21s"));
-	m_confirmPriceSeconds.AddString(_T("20s"));
+    m_confirmPriceSeconds.AddString(_T("29s"));
+    m_confirmPriceSeconds.AddString(_T("28s"));
+    m_confirmPriceSeconds.AddString(_T("27s"));
+    m_confirmPriceSeconds.AddString(_T("26s"));
+    m_confirmPriceSeconds.AddString(_T("25s"));
+    m_confirmPriceSeconds.AddString(_T("24s"));
+    m_confirmPriceSeconds.AddString(_T("23s"));
+    m_confirmPriceSeconds.AddString(_T("22s"));
+    m_confirmPriceSeconds.AddString(_T("21s"));
+    m_confirmPriceSeconds.AddString(_T("20s"));
 
-	m_confirmPriceSeconds.AddString(_T("19s"));
-	m_confirmPriceSeconds.AddString(_T("18s"));
-	m_confirmPriceSeconds.AddString(_T("17s"));
-	m_confirmPriceSeconds.AddString(_T("16s"));
-	m_confirmPriceSeconds.AddString(_T("15s"));
-	m_confirmPriceSeconds.AddString(_T("14s"));
-	m_confirmPriceSeconds.AddString(_T("13s"));
-	m_confirmPriceSeconds.AddString(_T("12s"));
-	m_confirmPriceSeconds.AddString(_T("11s"));
-	m_confirmPriceSeconds.AddString(_T("10s"));
+    m_confirmPriceSeconds.AddString(_T("19s"));
+    m_confirmPriceSeconds.AddString(_T("18s"));
+    m_confirmPriceSeconds.AddString(_T("17s"));
+    m_confirmPriceSeconds.AddString(_T("16s"));
+    m_confirmPriceSeconds.AddString(_T("15s"));
+    m_confirmPriceSeconds.AddString(_T("14s"));
+    m_confirmPriceSeconds.AddString(_T("13s"));
+    m_confirmPriceSeconds.AddString(_T("12s"));
+    m_confirmPriceSeconds.AddString(_T("11s"));
+    m_confirmPriceSeconds.AddString(_T("10s"));
 
-	m_confirmPriceSeconds.AddString(_T("9s"));
-	m_confirmPriceSeconds.AddString(_T("8s"));
-	m_confirmPriceSeconds.AddString(_T("7s"));
-	m_confirmPriceSeconds.AddString(_T("6s"));
-	m_confirmPriceSeconds.AddString(_T("5s"));
-	m_confirmPriceSeconds.AddString(_T("4s"));
-	m_confirmPriceSeconds.AddString(_T("3s"));
-	m_confirmPriceSeconds.AddString(_T("2s"));
-	m_confirmPriceSeconds.AddString(_T("1s"));
-
+    m_confirmPriceSeconds.AddString(_T("9s"));
+    m_confirmPriceSeconds.AddString(_T("8s"));
+    m_confirmPriceSeconds.AddString(_T("7s"));
+    m_confirmPriceSeconds.AddString(_T("6s"));
+    m_confirmPriceSeconds.AddString(_T("5s"));
+    m_confirmPriceSeconds.AddString(_T("4s"));
+    m_confirmPriceSeconds.AddString(_T("3s"));
+    m_confirmPriceSeconds.AddString(_T("2s"));
+    m_confirmPriceSeconds.AddString(_T("1s"));
 
     m_confirmPriceSeconds.SetCurSel(5);
 
@@ -403,31 +392,31 @@ BOOL Ct1Dlg::OnInitDialog()
     //m_cbExample.GetLBText(nIndex, strCBText);
 
     //@todo, read local file to check if it is registered
-	editorMy.SetWindowText(_T("Input URL...F7"));
+    editorMy.SetWindowText(_T("Input URL...F7"));
     CEdit infoPanelEditor;
 
     //CString strURL("http://www.baidu.com");
-	CString strURL("http://moni.51hupai.org/");
-	if(false/*if registered*/)
+    CString strURL("http://moni.51hupai.org/");
+    if(false/*if registered*/)
     {
         strURL= "http://test.alltobid.com/";
     }
     m_pBrowserMy.Navigate(strURL, NULL, NULL, NULL, NULL);
 
-	return TRUE;  // return TRUE  unless you set the focus to a control
+    return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
 void Ct1Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDHtmlDialog::OnSysCommand(nID, lParam);
-	}
+    if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+    {
+        CAboutDlg dlgAbout;
+        dlgAbout.DoModal();
+    }
+    else
+    {
+        CDHtmlDialog::OnSysCommand(nID, lParam);
+    }
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -436,70 +425,69 @@ void Ct1Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void Ct1Dlg::OnPaint()
 {
-	if (IsIconic())
-	{
-		CPaintDC dc(this); // device context for painting
+    if (IsIconic())
+    {
+        CPaintDC dc(this); // device context for painting
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+        SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Center icon in client rectangle
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
+        // Center icon in client rectangle
+        int cxIcon = GetSystemMetrics(SM_CXICON);
+        int cyIcon = GetSystemMetrics(SM_CYICON);
+        CRect rect;
+        GetClientRect(&rect);
+        int x = (rect.Width() - cxIcon + 1) / 2;
+        int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
-	}
-	else
-	{
-		CDHtmlDialog::OnPaint();
-	}
+        // Draw the icon
+        dc.DrawIcon(x, y, m_hIcon);
+    }
+    else
+    {
+        CDHtmlDialog::OnPaint();
+    }
 }
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
 HCURSOR Ct1Dlg::OnQueryDragIcon()
 {
-	return static_cast<HCURSOR>(m_hIcon);
+    return static_cast<HCURSOR>(m_hIcon);
 }
 
 HRESULT Ct1Dlg::OnButtonOK(IHTMLElement* /*pElement*/)
 {
-	OnOK();
-	return S_OK;
+    OnOK();
+    return S_OK;
 }
 
 HRESULT Ct1Dlg::OnButtonCancel(IHTMLElement* /*pElement*/)
 {
-	OnCancel();
-	return S_OK;
+    OnCancel();
+    return S_OK;
 }
 
 void Ct1Dlg::OnCancel()
 {
-	// CDialog::OnCancel();  // MUST remove this line
-	DestroyWindow();
+    // CDialog::OnCancel();  // MUST remove this line
+    DestroyWindow();
 }
-
 
 void Ct1Dlg::OnOK()
 {
-	// CDialog::OnOK(); // MUST remove this line
-	DestroyWindow();
+    // CDialog::OnOK(); // MUST remove this line
+    DestroyWindow();
 }
 
 //void Ct1Dlg::PostNcDestroy()
 //{
-//	delete this;
+//    delete this;
 //}
 
 HRESULT Ct1Dlg::OnButtonHelp(IHTMLElement* /*pElement*/)
 {
-	OnHelp();
-	return S_OK;
+    OnHelp();
+    return S_OK;
 }
 
 void Ct1Dlg::OnBnClickedButtonRefresh()
@@ -507,7 +495,6 @@ void Ct1Dlg::OnBnClickedButtonRefresh()
     // TODO: Add your control notification handler code here
     m_pBrowserMy.Refresh();
 }
-
 
 BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -556,7 +543,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         infoPanelEditor.SetWindowText(coordinates);
     }
 
-	performTimeRecognition();
+    performTimeRecognition();
 
     performPriceRecognition();
 
@@ -566,12 +553,11 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
     }
 
     performCaptchaProcessing(pMsg);
-	
+
     automateWorkFlow();
 
-	return CDialog::PreTranslateMessage(pMsg);
+    return CDialog::PreTranslateMessage(pMsg);
 }
-
 
 void Ct1Dlg::performPriceRecognition()
 {
@@ -612,41 +598,41 @@ void Ct1Dlg::performPriceRecognition()
 
 void Ct1Dlg::performTimeRecognition()
 {
-	if (m_timeDiff == 0)
-	{
-		if (!TimeAccurateFilter.ready())
-		{
-			std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
-			std::chrono::milliseconds elapsed =
-				std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
-			if (elapsed.count() >= 100)
-			{
-				img::writePriceToFile(GetDC()->m_hDC,
-					RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
-					RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
-					RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
-					RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
-					ENHANCED_AREA_BEFORE);
-				img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
-				std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
-				TimeAccurateFilter.process(time);
+    if (m_timeDiff == 0)
+    {
+        if (!TimeAccurateFilter.ready())
+        {
+            std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+            std::chrono::milliseconds elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
+            if (elapsed.count() >= 100)
+            {
+                img::writePriceToFile(GetDC()->m_hDC,
+                    RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
+                    RELATIVE_TOP_TIME - DIALOG_FRAME_TOP_HEIGHT,
+                    RELATIVE_RIGHT_TIME - RELATIVE_LEFT_TIME,
+                    RELATIVE_BOTTOM_TIME - RELATIVE_TOP_TIME,
+                    ENHANCED_AREA_BEFORE);
+                img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
+                std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
+                TimeAccurateFilter.process(time);
 
-				m_priceTimer = std::chrono::high_resolution_clock::now();
-			}
-		}
-		else
-		{
-			std::time_t t = std::time(NULL);
-			std::tm then_tm = *std::localtime(&t);
-			then_tm.tm_hour = TimeAccurateFilter.getHour();
-			then_tm.tm_min = TimeAccurateFilter.getMinute();
-			then_tm.tm_sec = TimeAccurateFilter.getSecond();
+                m_priceTimer = std::chrono::high_resolution_clock::now();
+            }
+        }
+        else
+        {
+            std::time_t t = std::time(NULL);
+            std::tm then_tm = *std::localtime(&t);
+            then_tm.tm_hour = TimeAccurateFilter.getHour();
+            then_tm.tm_min = TimeAccurateFilter.getMinute();
+            then_tm.tm_sec = TimeAccurateFilter.getSecond();
 
-			time_t timetThen = mktime(&then_tm);
-			std::chrono::time_point<std::chrono::system_clock>
-				then_tp = std::chrono::system_clock::from_time_t(timetThen);
-			std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
-			m_timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(local - then_tp).count();
+            time_t timetThen = mktime(&then_tm);
+            std::chrono::time_point<std::chrono::system_clock>
+                then_tp = std::chrono::system_clock::from_time_t(timetThen);
+            std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
+            m_timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(local - then_tp).count();
             if (m_timeDiff == 0)
             {
                 m_timeDiff = -1; // This big change case should never happen in theory. Set 1 milliseconds just in case
@@ -654,34 +640,34 @@ void Ct1Dlg::performTimeRecognition()
 
             logger::log(CString("校准国拍服务器时间 ..."));
 #if 0
-			CString coordinates;
-			coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
-			editorMy.SetWindowText(coordinates);
+            CString coordinates;
+            coordinates.Format(_T("%s"), CString(TimeAccurateFilter.getTime().c_str()));
+            editorMy.SetWindowText(coordinates);
 #endif
-		}
-	}
+        }
+    }
 }
 
 void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
 {
     //std::tm server = utl::getServerTime(m_timeDiff);
     //const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 15 && server.tm_sec <= 19);
-    
+
     if (m_captchaEnlarge.GetCheck() == BST_CHECKED &&
         STATE_CAPTCHA_READY == m_stateMachine &&
         !staticImageCtrl.isCaptchaWorking())
     {
-        HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC, 
+        HBITMAP hBitMap = img::GetSrcBit(GetDC()->m_hDC,
                                          CAPTCHA_ENLARGE_AREA_LEFT.x,
-                                         CAPTCHA_ENLARGE_AREA_LEFT.y, 
-                                         CAPTCHA_ENLARGE_AREA_RIGHT.x, 
+                                         CAPTCHA_ENLARGE_AREA_LEFT.y,
+                                         CAPTCHA_ENLARGE_AREA_RIGHT.x,
                                          CAPTCHA_ENLARGE_AREA_RIGHT.y);
         /*m_image = new StaticImageCtrl(this, hBitMap);
         m_image->setVisible(8);*/
         CStatic* pWnd = (CStatic*)GetDlgItem(IDC_STATIC_PIC);
         pWnd->MoveWindow(CAPTCHA_ENLARGE_AREA_LEFT.x - 50 - 40/*40 make the image moves upwards*/,
-                         CAPTCHA_ENLARGE_AREA_LEFT.y - 25 - 130 /*130 make the image moves upwards*/, 
-                         CAPTCHA_ENLARGE_AREA_RIGHT.x * 2, 
+                         CAPTCHA_ENLARGE_AREA_LEFT.y - 25 - 130 /*130 make the image moves upwards*/,
+                         CAPTCHA_ENLARGE_AREA_RIGHT.x * 2,
                          CAPTCHA_ENLARGE_AREA_RIGHT.y * 2);
         pWnd->SetBitmap(hBitMap);
         pWnd->SetWindowPos(NULL,
@@ -720,7 +706,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             //@todo, check state
             //m_pBrowserMy.GoBack();
-            
+
             return true;
         }
         else if (pMsg->wParam == VK_F2)
@@ -746,7 +732,6 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             coordinates.Format(_T("%s"), CString(time.c_str()));
             editorMy.SetWindowText(coordinates);
 #endif
-
         }
         else if (pMsg->wParam == VK_F5)
         {
@@ -755,10 +740,10 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F4)
         {
-            img::writePriceToFile(GetDC()->m_hDC, 
-                                  RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH, 
+            img::writePriceToFile(GetDC()->m_hDC,
+                                  RELATIVE_LEFT_SMALL - DIALOG_FRAME_LEFT_WIDTH,
                                   RELATIVE_TOP_SMALL - DIALOG_FRAME_TOP_HEIGHT,
-                                  RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL, 
+                                  RELATIVE_RIGHT_SMALL - RELATIVE_LEFT_SMALL,
                                   RELATIVE_BOTTOM_SMALL - RELATIVE_TOP_SMALL,
                                   ENHANCED_AREA_BEFORE);
             img::enhanceImage(ENHANCED_AREA_BEFORE, ENHANCED_AREA_AFTER);
@@ -766,12 +751,11 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
 
             //display result
             CString coordinates;
-            coordinates.Format(_T("%s, %s"), 
+            coordinates.Format(_T("%s, %s"),
                                CString(captureText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM).c_str()),
                                CString(price.c_str()));
             editorMy.SetWindowText(coordinates);
 
-            
             //captureEnhancedText(RELATIVE_LEFT, RELATIVE_TOP, RELATIVE_RIGHT, RELATIVE_BOTTOM);
         }
         else if (pMsg->wParam == VK_F6)
@@ -810,7 +794,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 log.Format(_T("启动智能出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
                 logger::log(log);
             }
-            
+
             std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
             ipt::keyboardSendUnicodeInput(predicatePrice);
 
@@ -862,7 +846,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
                 m_stateMachine = STATE_NONE;
                 logger::log(CString("恢复工作流初始状态..."));
             }
-            
+
             //Find any cancel click, or find ok to click
             return true;
         }
@@ -872,7 +856,6 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
 }
 
 void Ct1Dlg::automateWorkFlow() {
-    
     //start automatically
     if (m_stateMachine == STATE_NONE)
     {
@@ -894,7 +877,7 @@ void Ct1Dlg::automateWorkFlow() {
             staticImageCtrl.setVisible(5 /*seconds*/);
         }
     }
-    
+
     if (m_stateMachine != STATE_NONE)
     {
         if (m_stateMachine == STATE_PRICE_INPUT)
@@ -908,10 +891,10 @@ void Ct1Dlg::automateWorkFlow() {
                 RECT rect;
                 GetWindowRect(&rect);
                 ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
-                
+
                 time(&m_workFlowTimer);
                 m_isInUserInputStage = true;
-                
+
                 m_stateMachine = STATE_PRICE_CONFIRM;
             }
         }
@@ -945,7 +928,7 @@ void Ct1Dlg::automateWorkFlow() {
                     /* need to optimize since this captcha too often cases,
                     a flag to skip time-comsuing cal.
                     */
-                    ipt::leftButtonClick(rect.left + REQUEST_TOO_OFTEN_BACKUP.x, 
+                    ipt::leftButtonClick(rect.left + REQUEST_TOO_OFTEN_BACKUP.x,
                                          rect.top + REQUEST_TOO_OFTEN_BACKUP.y);
                     if (m_okPositionWhenSending.x == 0 && m_okPositionWhenSending.y == 0)
                     {
@@ -963,17 +946,17 @@ void Ct1Dlg::automateWorkFlow() {
                     m_stateMachine = STATE_CAPTCHA_READY;
                 }
                 time(&m_workFlowTimer);
-                m_isInUserInputStage = false; 
+                m_isInUserInputStage = false;
             }
         }
         else if (m_stateMachine == STATE_PRICE_SEND)
         {
-			const int seletion = m_sendPriceAdd.GetCurSel();
-			CString money;
-			m_sendPriceAdd.GetLBText(seletion, money);
-			const int sendMoneyAdded = _ttoi(money);
+            const int seletion = m_sendPriceAdd.GetCurSel();
+            CString money;
+            m_sendPriceAdd.GetLBText(seletion, money);
+            const int sendMoneyAdded = _ttoi(money);
 
-			const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT + sendMoneyAdded);
+            const bool acceptedPriceRange = (m_bidUserFinalPrice - m_bidPrice <= PERFORM_SEND_PRICE_POINT + sendMoneyAdded);
             const int nIndex = m_forceSendPriceTime.GetCurSel();
             CString strSecond;
             m_forceSendPriceTime.GetLBText(nIndex, strSecond);
@@ -1027,37 +1010,35 @@ void Ct1Dlg::automateWorkFlow() {
                 {
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                     m_stateMachine = STATE_NONE;
-                    
+
                     logger::log(CString("已获取出价返回结果"));
                 }
                 time(&m_workFlowTimer);
             }
         }
     }
-
 }
-
 
 std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom)
 {
 #if defined _WIN32 || defined _WIN64
-	
-	//HWND SomeWindowHandle = GetDesktopWindow();
-	HWND SomeWindowHandle = GetDesktopWindow()->m_hWnd;
-	//HDC DC = GetDC(SomeWindowHandle);
-	HDC DC = GetDC()->m_hDC;
-    
+
+    //HWND SomeWindowHandle = GetDesktopWindow();
+    HWND SomeWindowHandle = GetDesktopWindow()->m_hWnd;
+    //HDC DC = GetDC(SomeWindowHandle);
+    HDC DC = GetDC()->m_hDC;
+
     // @todo, current dialog's client area
     //GetScreenShotDialog(DC);
     //return std::string("test");
 
-	img::Image Img = img::Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT,
+    img::Image Img = img::Image(DC, relativeLeft - DIALOG_FRAME_LEFT_WIDTH, relativeTop - DIALOG_FRAME_TOP_HEIGHT,
                       relativeRight - relativeLeft, relativeBottom - relativeTop); //screenshot of 0, 0, 200, 200..
-	
-	//ReleaseDC(SomeWindowHandle, DC);
-	ReleaseDC(GetDC());
+
+    //ReleaseDC(SomeWindowHandle, DC);
+    ReleaseDC(GetDC());
 #else
-	Image Img = Image(some_pixel_pointer, 200, 200); //pointer to pixels..
+    Image Img = Image(some_pixel_pointer, 200, 200); //pointer to pixels..
 #endif
 
     // For testing purpose
@@ -1067,16 +1048,16 @@ std::string Ct1Dlg::captureText(int relativeLeft, int relativeTop, int relativeR
     GetWindowRect(&rect);*/
 
     tesseract::TessBaseAPI tesseract_ptr;
-	tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
-	tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
-	tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
-	tesseract_ptr.SetVariable("tessedit_char_blacklist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-	tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
-	tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
+    tesseract_ptr.Init("", "eng", tesseract::OEM_DEFAULT);
+    tesseract_ptr.SetVariable("classify_bln_numeric_mode", "1");
+    tesseract_ptr.SetVariable("tessedit_char_whitelist", "0123456789:");
+    tesseract_ptr.SetVariable("tessedit_char_blacklist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
+    tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
 
     //std::unique_ptr<char[]> utf8_text_ptr(tesseract_ptr->GetUTF8Text());
-	char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
-	return std::string(utf8_text_ptr);
+    char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
+    return std::string(utf8_text_ptr);
 }
 
 std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
@@ -1089,14 +1070,12 @@ std::string Ct1Dlg::captureEnhancedText(std::string enhancedFile)
     tesseract_ptr.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
     //tesseract_ptr.SetImage(Img.GetPixels(), Img.GetWidth(), Img.GetHeight(), Img.GetBytesPerPixel(), Img.GetBytesPerScanLine()); //Fixed this line..
 
-
     STRING text_out;
     tesseract_ptr.ProcessPages(enhancedFile.c_str(), NULL, 0, &text_out);
                                                                                                                                  //std::unique_ptr<char[]> utf8_text_ptr(tesseract_ptr->GetUTF8Text());
     char* utf8_text_ptr = tesseract_ptr.GetUTF8Text();
     return std::string(utf8_text_ptr);
 }
-
 
 //Very time consuming, 1.2 seconds uses
 cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
@@ -1108,14 +1087,14 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     cv::imwrite(DIALOG_CAPTURE_TMP, dialogShot);
     cv::Mat img = cv::imread(DIALOG_CAPTURE_TMP, 1);
     remove(DIALOG_CAPTURE_TMP.c_str());
-    
+
     //cv::Mat templ = cv::imread(templateFile, 1);
     //replace imread to get Mat from stream
     std::ifstream templateStream(templateFile, std::ios::binary);
     std::vector<char> fileContents((std::istreambuf_iterator<char>(templateStream)),
         std::istreambuf_iterator<char>());
     cv::Mat templ = cv::imdecode(cv::Mat(fileContents), 1);
-    
+
     cv::Mat result;
     int match_method = 0;
     int max_Trackbar = 5;
@@ -1157,7 +1136,6 @@ cv::Point Ct1Dlg::captureTemplate(const std::string& templateFile)
     //rectangle(result, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), cv::Scalar::all(0), 2, 8, 0);
     return  cv::Point(TEMPLATE_AREA_LEFT.x + matchLoc.x + templ.cols / 2, TEMPLATE_AREA_LEFT.y + matchLoc.y + templ.rows / 2);
 }
-
 
 void Ct1Dlg::OnCbnSelchangeComboMode()
 {
