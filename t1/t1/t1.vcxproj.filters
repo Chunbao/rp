@@ -21,6 +21,9 @@
       <UniqueIdentifier>{b639357c-717f-4360-9c1e-0e2e2977a48f}</UniqueIdentifier>
       <Extensions>htm;html</Extensions>
     </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{76eb3f0c-d67e-4bca-a850-d370277da8de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CWebBrowser2.cpp">
@@ -35,14 +38,14 @@
     <ClCompile Include="t1Dlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImgUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="StrategyDlg.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgUtil.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticCtrl.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,13 +65,13 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImgUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticCtrl.h">
-      <Filter>Header Files</Filter>
+      <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="StrategyDlg.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticCtrl.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
