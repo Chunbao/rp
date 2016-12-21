@@ -38,6 +38,7 @@
 #define IDC_COMBO_SEND                  1014
 #define IDC_COMBO_STRATEGY              1015
 #define IDC_EDIT__SECOND_SEND_TIME      1017
+#define IDC_EDIT_SECOND_SEND_TIME       1017
 #define IDC_SPIN7                       1018
 #define IDC_SPIN8                       1019
 #define IDC_EDIT_THIRD_MINUTE           1020
@@ -54,6 +55,8 @@
 #define IDC_SPIN12                      1031
 #define IDC_EDIT_SECOND_MINUTE          1032
 #define IDC_COMBO_SECOND_SEND           1033
+#define IDC_STATIC_RECOGNIZED_PRICE     1034
+#define IDC_STATIC_INTELLIGENT_PRICE    1035
 
 // Next default values for new objects
 // 
@@ -61,7 +64,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1034
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

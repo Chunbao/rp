@@ -111,7 +111,7 @@ BOOL Ct1App::InitInstance()
 	pDialog->ShowWindow(SW_SHOW);
 	pDialog->UpdateWindow();
 
-	m_mainDialog = std::make_shared<Ct1Dlg>();
+	m_mainDialog = std::make_shared<Ct1Dlg>(pDialog);
 	ret = m_mainDialog->Create(Ct1Dlg::IDD);
 	if (!ret)   //Create failed.
 	{

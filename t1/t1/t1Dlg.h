@@ -27,6 +27,7 @@
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
+class CStrategyDlg;
 
 // Ct1Dlg dialog
 class Ct1Dlg : public CDHtmlDialog
@@ -81,6 +82,8 @@ public:
 
 
 private:
+	CStrategyDlg* m_strategyDlg;
+
 	CWebBrowser2 m_pBrowserMy;
     // 1
     CEdit editorMy;

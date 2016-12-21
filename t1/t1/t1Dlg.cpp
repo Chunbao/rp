@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "t1.h"
 #include "t1Dlg.h"
+#include "StrategyDlg.h"
 #include "ImgUtil.h"
 
 #include <Windows.h>
@@ -225,7 +226,10 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_timeDiff(0)
 {
     m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
-
+	if (pParent)
+	{
+		m_strategyDlg = dynamic_cast<CStrategyDlg*>(pParent);
+	}
     logger::log(CString("Æô¶¯³ÌÐò ..."));
 }
 
@@ -541,6 +545,11 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         CString coordinates;
         coordinates.Format(_T("%d, %d"), RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
         infoPanelEditor.SetWindowText(coordinates);
+
+		CString price;
+		price.Format(_T("%d"), m_bidPrice);
+		m_strategyDlg->m_recognizedPrice.SetWindowTextW(price);
+		m_strategyDlg->UpdateData(false);
     }
 
     performTimeRecognition();
