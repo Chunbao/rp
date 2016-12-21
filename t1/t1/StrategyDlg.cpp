@@ -54,6 +54,8 @@ void CStrategyDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_THIRD_ADDED, m_thirdAdd);
 	DDX_Control(pDX, IDC_COMBO_THIRD_SEND, m_thirdSend);
 	DDX_Control(pDX, IDC_EDIT_THIRD_SEND_TIME, m_thirdSendTime);
+	DDX_Control(pDX, IDC_STATIC_RECOGNIZED_TIME, m_ocrTime);
+	DDX_Control(pDX, IDC_STATIC_INTELLIGENT_TIME, m_localTime);
 }
 
 BOOL CStrategyDlg::OnInitDialog()

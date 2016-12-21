@@ -30,6 +30,8 @@ protected:
 public:
 	CStatic m_recognizedPrice;
 	CStatic m_intelligentPrice;
+	CStatic m_ocrTime;
+	CStatic m_localTime;
 	CComboBox m_strategySelection;
 	CEdit m_secondMinute;
 	CEdit m_secondSecond;

@@ -308,6 +308,8 @@ BOOL Ct1Dlg::OnInitDialog()
     CString strURL("www.microsoft.com");
     m_pBrowserMy.Navigate(strURL, &noArg, &noArg, &noArg, &noArg);
 */
+	ModifyStyle(WS_SYSMENU, 0);
+
     DIALOG_FRAME_LEFT_WIDTH = utl::getBorderAreaWidth(GetDC()->m_hDC);
     DIALOG_FRAME_TOP_HEIGHT = utl::getCaptionAreaHeight(GetDC()->m_hDC);
 

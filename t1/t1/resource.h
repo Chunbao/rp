@@ -57,6 +57,8 @@
 #define IDC_COMBO_SECOND_SEND           1033
 #define IDC_STATIC_RECOGNIZED_PRICE     1034
 #define IDC_STATIC_INTELLIGENT_PRICE    1035
+#define IDC_STATIC_RECOGNIZED_TIME      1036
+#define IDC_STATIC_INTELLIGENT_TIME     1037
 
 // Next default values for new objects
 // 
