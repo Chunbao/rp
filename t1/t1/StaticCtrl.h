@@ -49,3 +49,66 @@ namespace net
         const std::string pathAnswer;
     };
 }
+
+namespace time
+{
+    class TimeManager
+    {
+    public:
+        TimeManager()
+            : m_lastExecuted(0)
+            , m_serverDiff(0)
+        {}
+
+        SYSTEMTIME getServerTime()
+        {
+            SYSTEMTIME      stLocal;
+            FILETIME        ftLocal;
+            ULARGE_INTEGER  uli;
+
+            GetLocalTime(&stLocal);
+            SystemTimeToFileTime(&stLocal, &ftLocal);
+
+            ftLocal.dwLowDateTime += m_serverDiff;
+
+            uli.LowPart = ftLocal.dwLowDateTime;
+            uli.HighPart = ftLocal.dwHighDateTime;
+
+            FileTimeToSystemTime(&ftLocal, &stLocal);
+
+            return stLocal;
+        }
+
+        // relative to local time
+        void setServerTime(ULONGLONG timeDiff)
+        {
+            m_serverDiff = timeDiff;
+        }
+
+        ULONGLONG getLastExecutedTimePoint()
+        {
+            return m_lastExecuted;
+        }
+
+        void setLastExecutedTimePoint()
+        {
+            SYSTEMTIME      stLocal;
+            FILETIME        ftLocal;
+            ULARGE_INTEGER  uli;
+
+            GetLocalTime(&stLocal);
+            SystemTimeToFileTime(&stLocal, &ftLocal);
+            uli.LowPart = ftLocal.dwLowDateTime;
+            uli.HighPart = ftLocal.dwHighDateTime;
+
+            m_lastExecuted = uli.QuadPart;
+        }
+
+    private:
+        
+
+        ULONGLONG m_lastExecuted; // m_priceTimer
+
+        ULONGLONG m_serverDiff; // m_timeDiff
+    };
+}
