@@ -50,7 +50,7 @@ namespace net
     };
 }
 
-namespace time
+namespace tim
 {
     class TimeManager
     {
