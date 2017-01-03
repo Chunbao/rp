@@ -83,6 +83,14 @@ namespace tim
             return stLocal;
         }
 
+        SYSTEMTIME getLocalTime()
+        {
+            SYSTEMTIME stLocal;
+            GetLocalTime(&stLocal);
+
+            return stLocal;
+        }
+
         ULONGLONG getGivenTimePoint(int hour, int minute, int second, int milli)
         {
             SYSTEMTIME      stLocal;

@@ -514,10 +514,19 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         //std::tm server = utl::getServerTime(m_timeDiff);
         SYSTEMTIME server = TimeManager.getServerTime();
         CString st;
-        st.Format(_T("国拍时间 %02d:%02d:%02d "), server.wHour, server.wMinute, server.wSecond);
+        st.Format(_T("%02d:%02d:%02d "), server.wHour, server.wMinute, server.wSecond);
+        m_strategyDlg->m_ocrTime.SetWindowTextW(st);
+        
+        SYSTEMTIME local = TimeManager.getLocalTime();
+        st.Format(_T("%02d:%02d:%02d "), local.wHour, local.wMinute, local.wSecond);
+        m_strategyDlg->m_localTime.SetWindowTextW(st);
+
+        const int intelligentPriceAdd = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
+        st.Format(_T("%d "), intelligentPriceAdd + m_bidPrice);
+        m_strategyDlg->m_intelligentPrice.SetWindowTextW(st);
 
         CString systemTime;
-        systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, %s\n"),
+        systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, %s 国拍时间 \n"),
             m_bidPrice,
             m_bidUserFinalPrice - m_bidPrice - 300,
             (int)m_stateMachine,
