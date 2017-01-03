@@ -1311,13 +1311,12 @@ namespace utl
 
 namespace prc
 {
-    int getIntelligencePrice(long long timeDiff)
+    int getIntelligencePrice(SYSTEMTIME server)
     {
         int ret(300);
-        std::tm server = utl::getServerTime(timeDiff);
-        const int hour = server.tm_hour;
-        const int min = server.tm_min;
-        const int sec = server.tm_sec;
+        const int hour = server.wHour;
+        const int min = server.wMinute;
+        const int sec = server.wSecond;
         if (hour == 11 && min == 29)
         {
             if (sec <= 35)
@@ -1340,13 +1339,12 @@ namespace prc
         return ret;
     }
 
-    int getIntelligencePriceBwRelease(long long timeDiff)
+    int getIntelligencePriceBwRelease(SYSTEMTIME server)
     {
         int ret(300);
-        std::tm server = utl::getServerTime(timeDiff);
-        const int hour = server.tm_hour;
-        const int min = server.tm_min;
-        const int sec = server.tm_sec;
+        const int hour = server.wHour;
+        const int min = server.wMinute;
+        const int sec = server.wSecond;
         if (hour == 11 && min == 29)
         {
             if (sec <= 7)

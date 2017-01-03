@@ -75,6 +75,7 @@ static int DIALOG_FRAME_TOP_HEIGHT;
 static utl::PriceFilter PriceOCRFilter;
 static utl::TimeFilter TimeAccurateFilter;
 static StaticImageCtrl staticImageCtrl;
+static tim::TimeManager TimeManager;
 
 const std::string ENHANCED_AREA_BEFORE("TmpPriceClip.bmp");
 const std::string ENHANCED_AREA_AFTER("TmpPriceEnhanced.bmp");
@@ -221,10 +222,11 @@ Ct1Dlg::Ct1Dlg(CWnd* pParent /*=NULL*/)
     , m_bidUserFinalPrice(0)
     , m_isInUserInputStage(false)
     , m_useIntelligenceBid(false)
-    , m_priceTimer(std::chrono::high_resolution_clock::now())
     , m_okPositionWhenSending(0 , 0)
-    , m_timeDiff(0)
 {
+    TimeManager.setLastExecutedTimePoint();
+    TimeManager.setServerDiff(0);
+
     m_hIcon = AfxGetApp()->LoadIcon(/*IDR_MAINFRAME*/IDI_ICON_PANDA);
 	if (pParent)
 	{
@@ -509,9 +511,10 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         SYSTEMTIME sys_time;
         GetLocalTime(&sys_time);
 
-        std::tm server = utl::getServerTime(m_timeDiff);
+        //std::tm server = utl::getServerTime(m_timeDiff);
+        SYSTEMTIME server = TimeManager.getServerTime();
         CString st;
-        st.Format(_T("国拍时间 %02d:%02d:%02d "), server.tm_hour, server.tm_min, server.tm_sec);
+        st.Format(_T("国拍时间 %02d:%02d:%02d "), server.wHour, server.wMinute, server.wSecond);
 
         CString systemTime;
         systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, %s\n"),
@@ -572,10 +575,10 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
 void Ct1Dlg::performPriceRecognition()
 {
-    std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+    /*std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
     std::chrono::milliseconds elapsed =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
-    if (elapsed.count() >= 200)
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);*/
+    if (TimeManager.getFreeMilliSeconds() >=200/*elapsed.count() >= 200*/)
     {
         std::string price;
         if (m_stateMachine != STATE_NONE)
@@ -603,20 +606,22 @@ void Ct1Dlg::performPriceRecognition()
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now).count());
         editorMy.SetWindowText(coordinates);
 #endif
-        m_priceTimer = std::chrono::high_resolution_clock::now();
+        //m_priceTimer = std::chrono::high_resolution_clock::now();
+        TimeManager.setLastExecutedTimePoint();
     }
 }
 
 void Ct1Dlg::performTimeRecognition()
 {
-    if (m_timeDiff == 0)
+    if (TimeManager.getServerDiff() == 0)
     {
         if (!TimeAccurateFilter.ready())
         {
-            std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
+            /*std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
             std::chrono::milliseconds elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);
-            if (elapsed.count() >= 100)
+                std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);*/
+            ULONGLONG free = TimeManager.getFreeMilliSeconds();
+            if (free > (ULONGLONG)100/*elapsed.count() >= 100*/)
             {
                 img::writePriceToFile(GetDC()->m_hDC,
                     RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
@@ -628,25 +633,22 @@ void Ct1Dlg::performTimeRecognition()
                 std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
                 TimeAccurateFilter.process(time);
 
-                m_priceTimer = std::chrono::high_resolution_clock::now();
+                //m_priceTimer = std::chrono::high_resolution_clock::now();
+                TimeManager.setLastExecutedTimePoint();
             }
         }
         else
         {
-            std::time_t t = std::time(NULL);
-            std::tm then_tm = *std::localtime(&t);
-            then_tm.tm_hour = TimeAccurateFilter.getHour();
-            then_tm.tm_min = TimeAccurateFilter.getMinute();
-            then_tm.tm_sec = TimeAccurateFilter.getSecond();
-
-            time_t timetThen = mktime(&then_tm);
-            std::chrono::time_point<std::chrono::system_clock>
-                then_tp = std::chrono::system_clock::from_time_t(timetThen);
-            std::chrono::system_clock::time_point local = std::chrono::system_clock::now();
-            m_timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(local - then_tp).count();
-            if (m_timeDiff == 0)
+            const int hour = TimeAccurateFilter.getHour();
+            const int minute = TimeAccurateFilter.getMinute();
+            const int second = TimeAccurateFilter.getSecond();
+            const ULONGLONG thenTime = TimeManager.getGivenTimePoint(hour, minute, second, 0);
+            const ULONGLONG local = TimeManager.currentTime();
+            const LONGLONG diff = local - thenTime;
+            TimeManager.setServerDiff(diff);
+            if (TimeManager.getServerDiff() == 0)
             {
-                m_timeDiff = -1; // This big change case should never happen in theory. Set 1 milliseconds just in case
+                TimeManager.setServerDiff(10); // This big change case should never happen in theory. Set 1 useconds just in case
             }
 
             logger::log(CString("校准国拍服务器时间 ..."));
@@ -697,8 +699,9 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
     {
         if (staticImageCtrl.setInvisibleIfTimeIsup())
         {
-            std::tm server = utl::getServerTime(m_timeDiff);
-            const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec <= 30);
+            //std::tm server = utl::getServerTime(m_timeDiff);
+            SYSTEMTIME server = TimeManager.getServerTime();
+            const bool preview = (server.wHour == 11 && server.wMinute == 29 && server.wSecond <= 30);
             if (preview)
             {
                 ipt::keyboardSendKey(VK_ESCAPE);
@@ -724,7 +727,8 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             //@todo, check state
             //m_pBrowserMy.GoBack();
-            m_timeDiff = 0;
+            //m_timeDiff = 0;
+            TimeManager.setServerDiff(0);
             TimeAccurateFilter.reset();
         }
         else if (pMsg->wParam == VK_F3)
@@ -798,7 +802,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             }
             else
             {
-                const int intelligencePrice = prc::getIntelligencePriceBwRelease(m_timeDiff);
+                const int intelligencePrice = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
                 m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
 
                 CString log;
@@ -874,10 +878,11 @@ void Ct1Dlg::automateWorkFlow() {
         CString strSecond;
         m_confirmPriceSeconds.GetLBText(nIndex, strSecond);
         const int seconds = _ttoi(strSecond);
-        std::tm server = utl::getServerTime(m_timeDiff);
-        const bool formal = server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= seconds;
+        //std::tm server = utl::getServerTime(m_timeDiff);
+        SYSTEMTIME server = TimeManager.getServerTime();
+        const bool formal = server.wHour == 11 && server.wMinute == 29 && server.wSecond >= seconds;
         const bool preview = (m_captchaPreview.GetCheck() == BST_CHECKED) &&
-                             (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec > 10 && server.tm_sec < 15);
+                             (server.wHour == 11 && server.wMinute == 29 && server.wSecond > 10 && server.wSecond < 15);
         if (formal || preview)
         {
             ipt::keyboardSendKey(VK_F6);
@@ -973,7 +978,7 @@ void Ct1Dlg::automateWorkFlow() {
             m_forceSendPriceTime.GetLBText(nIndex, strSecond);
             const float seconds = _ttof(strSecond);
 
-            const bool deadlineArrived = (utl::timeLeftInMilliseconds(m_timeDiff) < (long long)seconds * 1000);
+            const bool deadlineArrived = (TimeManager.timeLeftInMilliseconds() < (ULONGLONG)seconds * 1000);
             if (acceptedPriceRange || deadlineArrived)
             {
                 RECT rect;
@@ -1000,7 +1005,7 @@ void Ct1Dlg::automateWorkFlow() {
                 }
                 if (deadlineArrived)
                 {
-                    log += _T("临近出价截止时间还有 %ll毫秒", utl::timeLeftInMilliseconds(m_timeDiff));
+                    log += _T("临近出价截止时间还有 %ll毫秒", TimeManager.timeLeftInMilliseconds());
                 }
                 //log = _T("正在出价 ") + log;
                 logger::log(log);

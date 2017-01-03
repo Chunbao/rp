@@ -69,28 +69,61 @@ namespace tim
             GetLocalTime(&stLocal);
             SystemTimeToFileTime(&stLocal, &ftLocal);
 
-            ftLocal.dwLowDateTime += m_serverDiff;
+            //ftLocal.dwLowDateTime += (DWORD)m_serverDiff;
 
             uli.LowPart = ftLocal.dwLowDateTime;
             uli.HighPart = ftLocal.dwHighDateTime;
+
+            uli.QuadPart -= m_serverDiff;
+            ftLocal.dwLowDateTime = uli.LowPart;
+            ftLocal.dwHighDateTime = uli.HighPart;
 
             FileTimeToSystemTime(&ftLocal, &stLocal);
 
             return stLocal;
         }
 
+        ULONGLONG getGivenTimePoint(int hour, int minute, int second, int milli)
+        {
+            SYSTEMTIME      stLocal;
+            FILETIME        ftLocal;
+            ULARGE_INTEGER  uli;
+
+            GetLocalTime(&stLocal);
+            stLocal.wHour = hour;
+            stLocal.wMinute = minute;
+            stLocal.wSecond = second;
+            stLocal.wMilliseconds = milli;
+
+            SystemTimeToFileTime(&stLocal, &ftLocal);
+            uli.LowPart = ftLocal.dwLowDateTime;
+            uli.HighPart = ftLocal.dwHighDateTime;
+
+            return uli.QuadPart;
+        }
+
         // relative to local time
-        void setServerTime(ULONGLONG timeDiff)
+        void setServerDiff(LONGLONG timeDiff)
         {
             m_serverDiff = timeDiff;
         }
 
-        ULONGLONG getLastExecutedTimePoint()
+        LONGLONG getServerDiff()
         {
-            return m_lastExecuted;
+            return m_serverDiff;
+        }
+
+        ULONGLONG getFreeMilliSeconds()
+        {
+            return (currentTime() - m_lastExecuted)/10000;
         }
 
         void setLastExecutedTimePoint()
+        {
+            m_lastExecuted = currentTime();
+        }
+
+        ULONGLONG currentTime()
         {
             SYSTEMTIME      stLocal;
             FILETIME        ftLocal;
@@ -101,14 +134,18 @@ namespace tim
             uli.LowPart = ftLocal.dwLowDateTime;
             uli.HighPart = ftLocal.dwHighDateTime;
 
-            m_lastExecuted = uli.QuadPart;
+            return uli.QuadPart;
+        }
+
+        ULONGLONG timeLeftInMilliseconds()
+        {
+            return (getGivenTimePoint(11, 30, 0, 0) - currentTime())/10000;
         }
 
     private:
-        
 
         ULONGLONG m_lastExecuted; // m_priceTimer
 
-        ULONGLONG m_serverDiff; // m_timeDiff
+        LONGLONG m_serverDiff; // m_timeDiff
     };
 }

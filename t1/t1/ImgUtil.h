@@ -158,7 +158,7 @@ namespace utl
 namespace prc
 {
     //price
-    int getIntelligencePrice(long long timeDiff);
+    int getIntelligencePrice(SYSTEMTIME serverTime);
 
-    int getIntelligencePriceBwRelease(long long timeDiff);
+    int getIntelligencePriceBwRelease(SYSTEMTIME serverTime);
 }
