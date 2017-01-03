@@ -511,7 +511,6 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         SYSTEMTIME sys_time;
         GetLocalTime(&sys_time);
 
-        //std::tm server = utl::getServerTime(m_timeDiff);
         SYSTEMTIME server = TimeManager.getServerTime();
         CString st;
         st.Format(_T("%02d:%02d:%02d "), server.wHour, server.wMinute, server.wSecond);
@@ -585,10 +584,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 
 void Ct1Dlg::performPriceRecognition()
 {
-    /*std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
-    std::chrono::milliseconds elapsed =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);*/
-    if (TimeManager.getFreeMilliSeconds() >=200/*elapsed.count() >= 200*/)
+    if (TimeManager.getFreeMilliSeconds() >=200)
     {
         std::string price;
         if (m_stateMachine != STATE_NONE)
@@ -627,11 +623,8 @@ void Ct1Dlg::performTimeRecognition()
     {
         if (!TimeAccurateFilter.ready())
         {
-            /*std::chrono::high_resolution_clock::time_point now(std::chrono::high_resolution_clock::now());
-            std::chrono::milliseconds elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(now - m_priceTimer);*/
             ULONGLONG free = TimeManager.getFreeMilliSeconds();
-            if (free > (ULONGLONG)100/*elapsed.count() >= 100*/)
+            if (free > (ULONGLONG)100)
             {
                 img::writePriceToFile(GetDC()->m_hDC,
                     RELATIVE_LEFT_TIME - DIALOG_FRAME_LEFT_WIDTH,
@@ -643,7 +636,6 @@ void Ct1Dlg::performTimeRecognition()
                 std::string time = captureEnhancedText(ENHANCED_AREA_AFTER);
                 TimeAccurateFilter.process(time);
 
-                //m_priceTimer = std::chrono::high_resolution_clock::now();
                 TimeManager.setLastExecutedTimePoint();
             }
         }
@@ -673,9 +665,6 @@ void Ct1Dlg::performTimeRecognition()
 
 void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
 {
-    //std::tm server = utl::getServerTime(m_timeDiff);
-    //const bool preview = (server.tm_hour == 11 && server.tm_min == 29 && server.tm_sec >= 15 && server.tm_sec <= 19);
-
     if (m_captchaEnlarge.GetCheck() == BST_CHECKED &&
         STATE_CAPTCHA_READY == m_stateMachine &&
         !staticImageCtrl.isCaptchaWorking())
@@ -709,7 +698,6 @@ void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
     {
         if (staticImageCtrl.setInvisibleIfTimeIsup())
         {
-            //std::tm server = utl::getServerTime(m_timeDiff);
             SYSTEMTIME server = TimeManager.getServerTime();
             const bool preview = (server.wHour == 11 && server.wMinute == 29 && server.wSecond <= 30);
             if (preview)
@@ -737,7 +725,6 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         {
             //@todo, check state
             //m_pBrowserMy.GoBack();
-            //m_timeDiff = 0;
             TimeManager.setServerDiff(0);
             TimeAccurateFilter.reset();
         }
@@ -888,7 +875,6 @@ void Ct1Dlg::automateWorkFlow() {
         CString strSecond;
         m_confirmPriceSeconds.GetLBText(nIndex, strSecond);
         const int seconds = _ttoi(strSecond);
-        //std::tm server = utl::getServerTime(m_timeDiff);
         SYSTEMTIME server = TimeManager.getServerTime();
         const bool formal = server.wHour == 11 && server.wMinute == 29 && server.wSecond >= seconds;
         const bool preview = (m_captchaPreview.GetCheck() == BST_CHECKED) &&
