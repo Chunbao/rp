@@ -516,7 +516,16 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         CString st;
         st.Format(_T("%02d:%02d:%02d "), server.wHour, server.wMinute, server.wSecond);
         m_strategyDlg->m_ocrTime.SetWindowTextW(st);
-        
+
+        CString systemTime;
+        systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, 国拍时间 %s\n"),
+            m_bidPrice,
+            m_bidUserFinalPrice - m_bidPrice - 300,
+            (int)m_stateMachine,
+            st);
+        SetWindowText(systemTime);
+
+
         SYSTEMTIME local = TimeManager.getLocalTime();
         st.Format(_T("%02d:%02d:%02d "), local.wHour, local.wMinute, local.wSecond);
         m_strategyDlg->m_localTime.SetWindowTextW(st);
@@ -524,14 +533,6 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         const int intelligentPriceAdd = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
         st.Format(_T("%d "), intelligentPriceAdd + m_bidPrice);
         m_strategyDlg->m_intelligentPrice.SetWindowTextW(st);
-
-        CString systemTime;
-        systemTime.Format(_T("当前价格%d 距离接受区间 %d, 工作流 %d, %s 国拍时间 \n"),
-            m_bidPrice,
-            m_bidUserFinalPrice - m_bidPrice - 300,
-            (int)m_stateMachine,
-            st);
-        SetWindowText(systemTime);
         /*
         CString systemTime;
         systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s, %s\n"),
