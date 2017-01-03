@@ -612,7 +612,6 @@ void Ct1Dlg::performPriceRecognition()
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now).count());
         editorMy.SetWindowText(coordinates);
 #endif
-        //m_priceTimer = std::chrono::high_resolution_clock::now();
         TimeManager.setLastExecutedTimePoint();
     }
 }

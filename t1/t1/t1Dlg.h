@@ -93,16 +93,12 @@ private:
     cv::Point m_okPositionWhenSending;
     int m_bidUserFinalPrice; // user set
     int m_bidPrice; // realtime
-    std::chrono::high_resolution_clock::time_point m_priceTimer;
 
     // flag to remember input start, use enum 3 states if necessary
     // flag to stop captureTemplate from executing
     bool m_isInUserInputStage;
     //flag to show if it's the first round bid
     bool m_useIntelligenceBid;
-
-    // in milliseconds?, +1 if local is 1 second faster than server
-    long long m_timeDiff;
 
     enum STATE_MACHINE
     {
