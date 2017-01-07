@@ -77,26 +77,15 @@ private:
     void performCaptchaProcessing();
 
 public:
-
     afx_msg void OnBnClickedButtonRefresh();
     afx_msg void OnTimer(UINT_PTR nIDEvent);
 	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
 
-
 private:
-	CStrategyDlg* m_strategyDlg;
-
-	CWebBrowser2 m_pBrowserMy;
-    // 1
-    CEdit editorMy;
-	// display information pannel
-	CEdit infoPanelEditor;
-
     cv::Point m_okPositionWhenSending;
     int m_bidUserFinalPrice; // user set
     int m_bidPrice; // realtime
 
-    // flag to remember input start, use enum 3 states if necessary
     // flag to stop captureTemplate from executing
     bool m_isInUserInputStage;
     //flag to show if it's the first round bid
@@ -113,6 +102,15 @@ private:
     };
     STATE_MACHINE m_stateMachine;
 
+
+    // info pannel
+    CStrategyDlg* m_strategyDlg;
+    // web browser
+    CWebBrowser2 m_pBrowserMy;
+    // 1
+    CEdit editorMy;
+    // display information pannel
+    CEdit infoPanelEditor;
     // // in which seconds the price is fixed
     CComboBox m_confirmPriceSeconds;
     // How much extra money to add based on you time
@@ -125,6 +123,6 @@ public:
     afx_msg void OnCbnSelchangeComboMode();
     CButton m_captchaEnlarge;
     CButton m_captchaPreview;
-	// // Click Send price button when money arriving @yuan
+	// Click Send price button when money arriving @yuan
 	CComboBox m_sendPriceAdd;
 };
