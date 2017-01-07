@@ -65,6 +65,7 @@ protected:
 private:
     bool manageUserEvent(MSG* pMsg);
     void automateWorkFlow();
+    bool startWorkflow();
 
     std::string captureText(int relativeLeft, int relativeTop, int relativeRight, int relativeBottom);
     std::string captureEnhancedText(std::string enhancedFile);
@@ -111,10 +112,6 @@ private:
         STATE_PRICE_RESULT
     };
     STATE_MACHINE m_stateMachine;
-
-    // Since wf in preTranslateMsg, hold back the normal operation
-    //time_t m_workFlowTimer;
-
 
     // // in which seconds the price is fixed
     CComboBox m_confirmPriceSeconds;

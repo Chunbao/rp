@@ -781,47 +781,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
         }
         else if (pMsg->wParam == VK_F6)
         {
-            // simplified error handling
-            if (m_stateMachine != STATE_NONE)
-            {
-                logger::log(CString("工作流处于非初始状态无法强制启动 ..."));
-                return true;
-            }
-
-            /// click button
-            RECT rect;
-            GetWindowRect(&rect);
-            ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
-            ipt::keyboardSendBackspaceKey(6);
-
-            if (!m_useIntelligenceBid)
-            {
-                const int nIndex = m_confirmPriceAdd.GetCurSel();
-                CString strCBText;
-                m_confirmPriceAdd.GetLBText(nIndex, strCBText);
-                m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
-                m_useIntelligenceBid = true;
-
-                CString log;
-                log.Format(_T("启动策略出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, _ttoi(strCBText)));
-                logger::log(log);
-            }
-            else
-            {
-                const int intelligencePrice = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
-                m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
-
-                CString log;
-                log.Format(_T("启动智能出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
-                logger::log(log);
-            }
-
-            std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
-            ipt::keyboardSendUnicodeInput(predicatePrice);
-
-            m_stateMachine = STATE_PRICE_INPUT;
-            TimeManager.setInputDelayTimer();
-            return true;
+            return startWorkflow();
         }
         else if (pMsg->wParam == VK_F7)
         {
@@ -876,6 +836,51 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
     return false;
 }
 
+bool Ct1Dlg::startWorkflow()
+{
+    // simplified error handling
+    if (m_stateMachine != STATE_NONE)
+    {
+        logger::log(CString("工作流处于非初始状态无法强制启动 ..."));
+        return true;
+    }
+
+    /// click button
+    RECT rect;
+    GetWindowRect(&rect);
+    ipt::leftButtonClick(rect.left + PRICE_INPUT.x, rect.top + PRICE_INPUT.y);
+    ipt::keyboardSendBackspaceKey(6);
+
+    if (!m_useIntelligenceBid)
+    {
+        const int nIndex = m_confirmPriceAdd.GetCurSel();
+        CString strCBText;
+        m_confirmPriceAdd.GetLBText(nIndex, strCBText);
+        m_bidUserFinalPrice = m_bidPrice + _ttoi(strCBText);
+        m_useIntelligenceBid = true;
+
+        CString log;
+        log.Format(_T("启动策略出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, _ttoi(strCBText)));
+        logger::log(log);
+    }
+    else
+    {
+        const int intelligencePrice = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
+        m_bidUserFinalPrice = m_bidPrice + intelligencePrice;
+
+        CString log;
+        log.Format(_T("启动智能出价 出价：%d 国拍当前价格为：%d 策略加价： %d", m_bidUserFinalPrice, m_bidPrice, intelligencePrice));
+        logger::log(log);
+    }
+
+    std::string predicatePrice = std::to_string(m_bidUserFinalPrice);
+    ipt::keyboardSendUnicodeInput(predicatePrice);
+
+    m_stateMachine = STATE_PRICE_INPUT;
+    TimeManager.setInputDelayTimer();
+    return true;
+}
+
 void Ct1Dlg::automateWorkFlow() {
     //start automatically
     if (m_stateMachine == STATE_NONE)
@@ -890,7 +895,7 @@ void Ct1Dlg::automateWorkFlow() {
                              (server.wHour == 11 && server.wMinute == 29 && server.wSecond > 10 && server.wSecond < 15);
         if (formal || preview)
         {
-            ipt::keyboardSendKey(VK_F6);
+            startWorkflow();
             // No need to record wf time
         }
         if (preview)
