@@ -550,6 +550,15 @@ void Ct1Dlg::OnTimer(UINT_PTR nIDEvent)
 
         automateWorkFlow();
     }
+
+    if (GetForegroundWindow() != this)
+    {
+        const SYSTEMTIME server = TimeManager.getServerTime();
+        if (server.wHour == 11 && server.wMinute == 29 && server.wSecond >= 20)
+        {
+            SetForegroundWindow();
+        }
+    }
 }
 
 BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
