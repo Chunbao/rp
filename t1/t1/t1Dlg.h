@@ -34,10 +34,9 @@ class Ct1Dlg : public CDHtmlDialog
 {
 // Construction
 public:
-	Ct1Dlg(CWnd* pParent = NULL);	// standard constructor
+	Ct1Dlg(CWnd* pParent = NULL);
     ~Ct1Dlg();
 
-// Dialog Data
 	enum { IDD = IDD_T1_DIALOG, IDH = IDR_HTML_T1_DIALOG };
 
 	protected:
@@ -49,6 +48,12 @@ public:
 	void OnCancel();
 	void OnOK();
 	//void PostNcDestroy();
+
+public:
+    afx_msg void OnBnClickedButtonRefresh();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    afx_msg void OnCbnSelchangeComboMode();
+    BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
 
 // Implementation
 protected:
@@ -77,9 +82,10 @@ private:
     void performCaptchaProcessing();
 
 public:
-    afx_msg void OnBnClickedButtonRefresh();
-    afx_msg void OnTimer(UINT_PTR nIDEvent);
-	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
+    CButton m_captchaEnlarge;
+    CButton m_captchaPreview;
+    // Click Send price button when money arriving @yuan
+    CComboBox m_sendPriceAdd;
 
 private:
     cv::Point m_okPositionWhenSending;
@@ -88,7 +94,7 @@ private:
 
     // flag to stop captureTemplate from executing
     bool m_isInUserInputStage;
-    //flag to show if it's the first round bid
+    // flag to show if it's the first round bid
     bool m_useIntelligenceBid;
 
     enum STATE_MACHINE
@@ -119,10 +125,4 @@ private:
     CComboBox m_webMode;
     // Send price x seconds earlier deadline
     CComboBox m_forceSendPriceTime;
-public:
-    afx_msg void OnCbnSelchangeComboMode();
-    CButton m_captchaEnlarge;
-    CButton m_captchaPreview;
-	// Click Send price button when money arriving @yuan
-	CComboBox m_sendPriceAdd;
 };

@@ -563,27 +563,8 @@ void Ct1Dlg::OnTimer(UINT_PTR nIDEvent)
 
 BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
 {
-    // RT display info.
+    // coordinate info
     {
-        /*
-        CString systemTime;
-        systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s, %s\n"),
-                            sys_time.wYear,
-                            sys_time.wMonth,
-                            sys_time.wDay,
-                            sys_time.wHour,
-                            sys_time.wMinute,
-                            sys_time.wSecond,
-                            sys_time.wMilliseconds,
-                            sys_time.wDayOfWeek,
-                            m_bidPrice,
-                            m_bidUserFinalPrice - m_bidPrice - 300,
-                            (int)m_stateMachine,
-                            st,
-                            utl::getWorkingPath());
-        SetWindowText(systemTime);
-        */
-
         RECT rect;
         GetWindowRect(&rect);
         LONG RELATIVE_HORIZON_DISTANCE = pMsg->pt.x - rect.left;
@@ -598,6 +579,7 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
     {
         return true;
     }
+
     return CDialog::PreTranslateMessage(pMsg);
 }
 
