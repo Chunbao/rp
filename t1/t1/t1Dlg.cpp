@@ -207,6 +207,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
+
 // Ct1Dlg dialog
 
 BEGIN_DHTML_EVENT_MAP(Ct1Dlg)
@@ -260,14 +261,16 @@ BEGIN_MESSAGE_MAP(Ct1Dlg, CDHtmlDialog)
     //}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_Refresh, &Ct1Dlg::OnBnClickedButtonRefresh)
     ON_CBN_SELCHANGE(IDC_COMBO3, &Ct1Dlg::OnCbnSelchangeComboMode)
+    ON_WM_TIMER()
 END_MESSAGE_MAP()
+
 
 // Ct1Dlg message handlers
 
 BOOL Ct1Dlg::OnInitDialog()
 {
     CDHtmlDialog::OnInitDialog();
-
+    SetTimer(tim::TIMERID, 100, nullptr);
     // Add "About..." menu item to system menu.
 
     // IDM_ABOUTBOX must be in the system command range.
@@ -504,9 +507,9 @@ void Ct1Dlg::OnBnClickedButtonRefresh()
     m_pBrowserMy.Refresh();
 }
 
-BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
+void Ct1Dlg::OnTimer(UINT_PTR nIDEvent)
 {
-    // RT display info.
+    if (nIDEvent == tim::TIMERID)
     {
         SYSTEMTIME sys_time;
         GetLocalTime(&sys_time);
@@ -532,6 +535,27 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         const int intelligentPriceAdd = prc::getIntelligencePriceBwRelease(TimeManager.getServerTime());
         st.Format(_T("%d "), intelligentPriceAdd + m_bidPrice);
         m_strategyDlg->m_intelligentPrice.SetWindowTextW(st);
+
+        CString price;
+        price.Format(_T("%d"), m_bidPrice);
+        m_strategyDlg->m_recognizedPrice.SetWindowTextW(price);
+        m_strategyDlg->UpdateData(false);
+
+        performTimeRecognition();
+
+        performPriceRecognition();
+
+
+        performCaptchaProcessing();
+
+        automateWorkFlow();
+    }
+}
+
+BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
+{
+    // RT display info.
+    {
         /*
         CString systemTime;
         systemTime.Format(_T("%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d 当前价格%d 距离受理区间 %d, 工作流 %d, %s, %s\n"),
@@ -559,26 +583,12 @@ BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg)
         CString coordinates;
         coordinates.Format(_T("%d, %d"), RELATIVE_HORIZON_DISTANCE, RELATIVE_VERTICAL_DISTANCE);
         infoPanelEditor.SetWindowText(coordinates);
-
-		CString price;
-		price.Format(_T("%d"), m_bidPrice);
-		m_strategyDlg->m_recognizedPrice.SetWindowTextW(price);
-		m_strategyDlg->UpdateData(false);
     }
-
-    performTimeRecognition();
-
-    performPriceRecognition();
 
     if (manageUserEvent(pMsg))
     {
         return true;
     }
-
-    performCaptchaProcessing(pMsg);
-
-    automateWorkFlow();
-
     return CDialog::PreTranslateMessage(pMsg);
 }
 
@@ -662,7 +672,7 @@ void Ct1Dlg::performTimeRecognition()
     }
 }
 
-void Ct1Dlg::performCaptchaProcessing(MSG* pMsg)
+void Ct1Dlg::performCaptchaProcessing()
 {
     if (m_captchaEnlarge.GetCheck() == BST_CHECKED &&
         STATE_CAPTCHA_READY == m_stateMachine &&
@@ -810,7 +820,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             ipt::keyboardSendUnicodeInput(predicatePrice);
 
             m_stateMachine = STATE_PRICE_INPUT;
-            time(&m_workFlowTimer);
+            TimeManager.setInputDelayTimer();
             return true;
         }
         else if (pMsg->wParam == VK_F7)
@@ -829,7 +839,7 @@ bool Ct1Dlg::manageUserEvent(MSG* pMsg)
             //m_pBrowserMy.Refresh();
             if (m_stateMachine == STATE_CAPTCHA_READY)
             {
-                time(&m_workFlowTimer);
+                TimeManager.setInputDelayTimer();
                 m_stateMachine = STATE_PRICE_SEND;
                 logger::log(CString("电脑接管 等待出价时机..."));
             }
@@ -893,17 +903,15 @@ void Ct1Dlg::automateWorkFlow() {
     {
         if (m_stateMachine == STATE_PRICE_INPUT)
         {
-            time_t now;
-            time(&now);
-            double seconds = difftime(now, m_workFlowTimer);
-            if (seconds > INPUT_PRICE_DELAY)
+            ULONGLONG milliseconds = TimeManager.getInputDelayedInMilliseconds();
+            if (milliseconds > (ULONGLONG)INPUT_PRICE_DELAY * 1000)
             {
                 //@todo, happy flow case
                 RECT rect;
                 GetWindowRect(&rect);
                 ipt::leftButtonClick(rect.left + PRICE_CONFIRM.x, rect.top + PRICE_CONFIRM.y);
 
-                time(&m_workFlowTimer);
+                TimeManager.setInputDelayTimer();
                 m_isInUserInputStage = true;
 
                 m_stateMachine = STATE_PRICE_CONFIRM;
@@ -917,10 +925,8 @@ void Ct1Dlg::automateWorkFlow() {
             RECT rect;
             GetWindowRect(&rect);
 
-            time_t now;
-            time(&now);
-            double seconds = difftime(now, m_workFlowTimer);
-            if (seconds >= INPUT_PRICE_DELAY && m_isInUserInputStage)
+            ULONGLONG milliseconds = TimeManager.getInputDelayedInMilliseconds();
+            if (milliseconds >= INPUT_PRICE_DELAY * 1000 && m_isInUserInputStage)
             {
                 //       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 // @todo, this is a serious bug, the refresh doesn't function
@@ -956,7 +962,8 @@ void Ct1Dlg::automateWorkFlow() {
                     }
                     m_stateMachine = STATE_CAPTCHA_READY;
                 }
-                time(&m_workFlowTimer);
+
+                TimeManager.setInputDelayTimer();
                 m_isInUserInputStage = false;
             }
         }
@@ -973,7 +980,8 @@ void Ct1Dlg::automateWorkFlow() {
             m_forceSendPriceTime.GetLBText(nIndex, strSecond);
             const float seconds = _ttof(strSecond);
 
-            const bool deadlineArrived = (TimeManager.timeLeftInMilliseconds() < (ULONGLONG)seconds * 1000);
+            ULONGLONG tmp = TimeManager.timeLeftInMilliseconds();
+            const bool deadlineArrived = (tmp < (ULONGLONG)seconds * 1000);
             if (acceptedPriceRange || deadlineArrived)
             {
                 RECT rect;
@@ -989,7 +997,8 @@ void Ct1Dlg::automateWorkFlow() {
                     cv::Point capturedPosition = captureTemplate(BUTTON_OK_FILE);
                     ipt::leftButtonClick(rect.left + capturedPosition.x, rect.top + capturedPosition.y);
                 }
-                time(&m_workFlowTimer);
+
+                TimeManager.setInputDelayTimer();
                 m_stateMachine = STATE_PRICE_RESULT;
 
                 CString log;
@@ -1008,10 +1017,8 @@ void Ct1Dlg::automateWorkFlow() {
         }
         else if (m_stateMachine == STATE_PRICE_RESULT)
         {
-            time_t now;
-            time(&now);
-            double seconds = difftime(now, m_workFlowTimer);
-            if (seconds > INPUT_PRICE_DELAY)
+            ULONGLONG milliseconds = TimeManager.getInputDelayedInMilliseconds();
+            if (milliseconds > (ULONGLONG)INPUT_PRICE_DELAY * 1000)
             {
                 //precise match OK button, to make sure no dialog
                 RECT rect;
@@ -1024,7 +1031,8 @@ void Ct1Dlg::automateWorkFlow() {
 
                     logger::log(CString("已获取出价返回结果"));
                 }
-                time(&m_workFlowTimer);
+
+                TimeManager.setInputDelayTimer();
             }
         }
     }

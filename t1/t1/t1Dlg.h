@@ -73,11 +73,12 @@ private:
 
     void performPriceRecognition();
     void performTimeRecognition();
-    void performCaptchaProcessing(MSG* pMsg);
+    void performCaptchaProcessing();
 
 public:
 
     afx_msg void OnBnClickedButtonRefresh();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
 	BOOL Ct1Dlg::PreTranslateMessage(MSG* pMsg);
 
 
@@ -112,7 +113,7 @@ private:
     STATE_MACHINE m_stateMachine;
 
     // Since wf in preTranslateMsg, hold back the normal operation
-    time_t m_workFlowTimer;
+    //time_t m_workFlowTimer;
 
 
     // // in which seconds the price is fixed

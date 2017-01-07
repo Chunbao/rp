@@ -52,11 +52,14 @@ namespace net
 
 namespace tim
 {
+    const int TIMERID = 1;
+
     class TimeManager
     {
     public:
         TimeManager()
             : m_lastExecuted(0)
+            , m_inputDelayTimer(0)
             , m_serverDiff(0)
         {}
 
@@ -147,12 +150,24 @@ namespace tim
 
         ULONGLONG timeLeftInMilliseconds()
         {
-            return (getGivenTimePoint(11, 30, 0, 0) - currentTime())/10000;
+            return (getGivenTimePoint(11, 30, 0, 0) - (currentTime() - getServerDiff()))/10000;
+        }
+
+        void setInputDelayTimer()
+        {
+            m_inputDelayTimer = currentTime();
+        }
+
+        ULONGLONG getInputDelayedInMilliseconds()
+        {
+            return (currentTime() - m_inputDelayTimer) / 10000;
         }
 
     private:
 
         ULONGLONG m_lastExecuted; // m_priceTimer
+
+        ULONGLONG m_inputDelayTimer; // m_workFlowTimer
 
         LONGLONG m_serverDiff; // m_timeDiff
     };
